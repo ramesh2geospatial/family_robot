@@ -121,6 +121,7 @@ async def _listen_cycle(
         logger.error("Processing failed: %s", exc, exc_info=True)
         response = _FALLBACK_MSG
 
+    logger.info("Robot response: %s", response)
     await _speak(tts, audio, response)
 
 

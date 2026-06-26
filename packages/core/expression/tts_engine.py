@@ -53,16 +53,6 @@ class PiperTTSEngine:
             logger.warning("Piper init failed (%s); falling back to pyttsx3.", exc)
             self._use_piper = False
 
-    def _init_pyttsx(self) -> None:
-        """Initialise pyttsx3 fallback."""
-        try:
-            import pyttsx3  # type: ignore[import-untyped]
-
-            self._pyttsx_engine = pyttsx3.init()
-            logger.info("pyttsx3 TTS fallback initialised.")
-        except Exception as exc:
-            logger.error("pyttsx3 init failed: %s", exc)
-
     def _synthesize_piper(self, text: str) -> tuple[bytes, int]:
         """Synthesise with Piper and return (PCM bytes, sample_rate)."""
         buf = io.BytesIO()
@@ -81,20 +71,35 @@ class PiperTTSEngine:
         WAV file and read it back.
         """
         import tempfile, os
+        try:
+            import pyttsx3  # type: ignore[import-untyped]
+        except ImportError:
+            logger.error("pyttsx3 is not installed.")
+            raise RuntimeError("pyttsx3 is not installed.")
 
-        tmp_path = os.path.join(tempfile.gettempdir(), "_fr_tts.wav")
-        engine = self._pyttsx_engine
-        engine.save_to_file(text, tmp_path)  # type: ignore[union-attr]
-        engine.runAndWait()  # type: ignore[union-attr]
+        engine = pyttsx3.init()
+        tmp_path = os.path.join(tempfile.gettempdir(), f"_fr_tts_{os.getpid()}.wav")
+        if os.path.exists(tmp_path):
+            try:
+                os.remove(tmp_path)
+            except Exception:
+                pass
 
         try:
+            engine.save_to_file(text, tmp_path)
+            engine.runAndWait()
+            del engine
+
             with wave.open(tmp_path, "rb") as wav:
                 sample_rate = wav.getframerate()
                 pcm = wav.readframes(wav.getnframes())
             return pcm, sample_rate
         finally:
             if os.path.exists(tmp_path):
-                os.remove(tmp_path)
+                try:
+                    os.remove(tmp_path)
+                except Exception:
+                    pass
 
     async def synthesize(
         self,
@@ -115,17 +120,13 @@ class PiperTTSEngine:
         # Lazy initialisation
         if self._piper_voice is None and self._use_piper:
             await asyncio.to_thread(self._init_piper)
-        if not self._use_piper and self._pyttsx_engine is None:
-            await asyncio.to_thread(self._init_pyttsx)
 
         try:
             if self._use_piper and self._piper_voice is not None:
                 return await asyncio.to_thread(self._synthesize_piper, text)
-            elif self._pyttsx_engine is not None:
-                return await asyncio.to_thread(self._synthesize_pyttsx, text)
             else:
-                logger.error("No TTS backend available.")
-                return b"\x00" * 22050, 22050
+                return await asyncio.to_thread(self._synthesize_pyttsx, text)
         except Exception as exc:
             logger.error("TTS synthesis failed: %s", exc, exc_info=True)
             return b"\x00" * 22050, 22050
+
