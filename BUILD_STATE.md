@@ -9,7 +9,7 @@ Resume rule: read this file first, find the first 'in_progress'/'pending' step, 
 - **Status**: pending
 - **Next action**: implement cognition + memory (LLM client, SQLite WAL + sqlite-vec, intent router)
 - **Repo green**: yes
-- **Last commit**: 44e5f18
+- **Last commit**: b1012d9
 
 ## STEP TRACKER
 | # | Stage | Step | Status | Tests | Commit |
@@ -18,7 +18,7 @@ Resume rule: read this file first, find the first 'in_progress'/'pending' step, 
 | 1 | D1 | Project skeleton | done | cli help passes | a05ecc8 |
 | 2 | D1 | Ports + config + wiring | done | unit tests passed | 577af91 |
 | 3 | D1 | Desktop adapters | done | contract tests passed | 3e2091d |
-| 4 | D1 | Perception (wake/STT/VAD) | done | unit tests passed | 44e5f18 |
+| 4 | D1 | Perception (wake/STT/VAD) | done | unit tests passed | b1012d9 |
 | 5 | D1 | Cognition + memory | pending | - | - |
 | 6 | D1 | Expression + loop | pending | - | - |
 | 7 | D1 | Governance (identity/ACL) | pending | - | - |

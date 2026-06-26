@@ -49,17 +49,21 @@ class SpeechToText:
             np.frombuffer(audio_data, dtype=np.int16).astype(np.float32) / 32768.0
         )
 
-        # Transcribe audio. beam_size=5 is standard
-        # model.transcribe accepts 1D float32 numpy array representing the waveform
-        segments, info = self.model.transcribe(audio_np, beam_size=5)
+        try:
+            # Transcribe audio. beam_size=5 is standard
+            # model.transcribe accepts 1D float32 numpy array representing the waveform
+            segments, info = self.model.transcribe(audio_np, beam_size=5)
 
-        # Iterate over segments and join them
-        text_segments = []
-        for segment in segments:
-            text_segments.append(segment.text)
+            # Iterate over segments and join them
+            text_segments = []
+            for segment in segments:
+                text_segments.append(segment.text)
 
-        transcribed_text = " ".join(text_segments).strip()
-        detected_language = info.language
+            transcribed_text = " ".join(text_segments).strip()
+            detected_language = info.language
+        except Exception as e:
+            logger.error("Error transcribing audio with Whisper: %s", e, exc_info=True)
+            return "", ""
 
         logger.info(
             "STT result: lang=%s | text='%s'", detected_language, transcribed_text

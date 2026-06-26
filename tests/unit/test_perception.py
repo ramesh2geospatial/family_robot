@@ -103,3 +103,35 @@ def test_stt_transcribe():
         assert text == "hello world"
         assert lang == "en"
         mock_whisper.transcribe.assert_called_once()
+
+
+@pytest.mark.unit
+def test_wakeword_detector_empty_and_exception():
+    """Test WakeWordDetector returns 0.0 on empty input or error."""
+    with patch("openwakeword.model.Model") as mock_model_cls:
+        mock_model = MagicMock()
+        mock_model.predict.side_effect = Exception("Prediction error")
+        mock_model_cls.return_value = mock_model
+
+        detector = WakeWordDetector(wake_word="Hello Puppy")
+
+        # Empty chunk should return 0.0 directly
+        assert detector.predict(b"") == 0.0
+
+        # Exception from model should be handled gracefully and return 0.0
+        assert detector.predict(b"\x00" * 3200) == 0.0
+
+
+@pytest.mark.unit
+def test_stt_transcribe_exception():
+    """Test SpeechToText returns empty strings on exception."""
+    with patch("packages.core.perception.stt.WhisperModel") as mock_whisper_cls:
+        mock_whisper = MagicMock()
+        mock_whisper.transcribe.side_effect = Exception("Model run error")
+        mock_whisper_cls.return_value = mock_whisper
+
+        stt = SpeechToText()
+        text, lang = stt.transcribe(b"\x00" * 3200)
+
+        assert text == ""
+        assert lang == ""

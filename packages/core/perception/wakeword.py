@@ -58,13 +58,20 @@ class WakeWordDetector:
         audio_chunk: raw 16-bit PCM mono 16kHz audio.
         Returns the prediction confidence score (0.0 to 1.0).
         """
-        # Convert raw PCM bytes to int16 numpy array
-        audio_np = np.frombuffer(audio_chunk, dtype=np.int16)
+        if not audio_chunk:
+            return 0.0
 
-        # openwakeword model.predict expects int16 numpy array.
-        # It handles buffering internally.
-        predictions = self._model.predict(audio_np)
+        try:
+            # Convert raw PCM bytes to int16 numpy array
+            audio_np = np.frombuffer(audio_chunk, dtype=np.int16)
 
-        # predictions is a dictionary containing model scores, e.g., {'alexa': 0.02}
-        score = predictions.get(self.model_name, 0.0)
-        return float(score)
+            # openwakeword model.predict expects int16 numpy array.
+            # It handles buffering internally.
+            predictions = self._model.predict(audio_np)
+
+            # predictions is a dictionary containing model scores, e.g., {'alexa': 0.02}
+            score = predictions.get(self.model_name, 0.0)
+            return float(score)
+        except Exception as e:
+            logger.error("Error predicting wake word: %s", e, exc_info=True)
+            return 0.0
