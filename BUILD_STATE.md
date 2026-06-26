@@ -6,8 +6,8 @@ Resume rule: read this file first, find the first 'in_progress'/'pending' step, 
 ## CURRENT
 - **Stage**: D1 Desktop
 - **Active step**: 3
-- **Status**: pending
-- **Next action**: implement desktop adapters (Step 3)
+- **Status**: in_progress
+- **Next action**: implement desktop platform adapters (Audio, Camera, Home, Power)
 - **Repo green**: yes
 - **Last commit**: 577af91
 
@@ -17,7 +17,7 @@ Resume rule: read this file first, find the first 'in_progress'/'pending' step, 
 | 0 | D0 | Build harness (tests, ledger, lint) | done | smoke tests passed | a8cfbb2 |
 | 1 | D1 | Project skeleton | done | cli help passes | a05ecc8 |
 | 2 | D1 | Ports + config + wiring | done | unit tests passed | 577af91 |
-| 3 | D1 | Desktop adapters | pending | - | - |
+| 3 | D1 | Desktop adapters | in_progress | - | - |
 | 4 | D1 | Perception (wake/STT/VAD) | pending | - | - |
 | 5 | D1 | Cognition + memory | pending | - | - |
 | 6 | D1 | Expression + loop | pending | - | - |

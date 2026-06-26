@@ -11,6 +11,13 @@ from packages.core.ports.camera import CameraPort
 from packages.core.ports.home import HomePort
 from packages.core.ports.notify import NotifyPort
 from packages.core.ports.power import PowerPort
+from packages.adapters.desktop import (
+    PyAudioAdapter,
+    OpenCVCameraAdapter,
+    DesktopHomeAdapter,
+    DesktopPowerAdapter,
+    DesktopNotifyAdapter,
+)
 
 
 class MockAudioAdapter(AudioPort):
@@ -81,8 +88,16 @@ class WiredComponents:
 
 def wire_components(config: AppConfig) -> WiredComponents:
     """Wire and return components based on platform configuration."""
-    # In Step 2, we return mock/stub adapters for all platforms.
-    # They will be replaced with real adapters in later steps.
+    if config.platform == "desktop":
+        return WiredComponents(
+            audio=PyAudioAdapter(),
+            camera=OpenCVCameraAdapter(),
+            home=DesktopHomeAdapter(),
+            power=DesktopPowerAdapter(),
+            notify=DesktopNotifyAdapter(),
+        )
+
+    # Fallback to mocks for unsupported / pending platforms
     return WiredComponents(
         audio=MockAudioAdapter(),
         camera=MockCameraAdapter(),
