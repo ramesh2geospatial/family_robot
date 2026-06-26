@@ -9,7 +9,7 @@ Resume rule: read this file first, find the first 'in_progress'/'pending' step, 
 - **Status**: pending
 - **Next action**: implement Companion PWA
 - **Repo green**: yes
-- **Last commit**: (pending commit)
+- **Last commit**: f03bcc0
 
 ## STEP TRACKER
 | # | Stage | Step | Status | Tests | Commit |
