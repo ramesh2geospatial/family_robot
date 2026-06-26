@@ -31,7 +31,7 @@ dependencies = [
     "paho-mqtt",
     "aiomqtt",
     "python-kasa",
-    "python-broadlink",
+    "broadlink",
 ]
 
 [project.optional-dependencies]
@@ -85,3 +85,6 @@ ignore = []
 [tool.black]
 line-length = 88
 target-version = ['py311']
+
+[tool.setuptools.packages.find]
+include = ["apps*", "packages*"]

@@ -1,0 +1,5 @@
+# FamilyRobot Base Configuration
+system:
+  name: FamilyRobot
+  wake_word: "Hello Puppy"
+  language: en

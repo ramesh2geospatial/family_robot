@@ -5,17 +5,17 @@ Resume rule: read this file first, find the first 'in_progress'/'pending' step, 
 
 ## CURRENT
 - **Stage**: D1 Desktop
-- **Active step**: 1
+- **Active step**: 2
 - **Status**: pending
-- **Next action**: scaffold monorepo + pyproject + .gitignore (Step 1)
+- **Next action**: implement ports + config + wiring (Step 2)
 - **Repo green**: yes
-- **Last commit**: a8cfbb2
+- **Last commit**: a05ecc8
 
 ## STEP TRACKER
 | # | Stage | Step | Status | Tests | Commit |
 |---|---|---|---|---|---|
 | 0 | D0 | Build harness (tests, ledger, lint) | done | smoke tests passed | a8cfbb2 |
-| 1 | D1 | Project skeleton | pending | - | - |
+| 1 | D1 | Project skeleton | done | cli help passes | a05ecc8 |
 | 2 | D1 | Ports + config + wiring | pending | - | - |
 | 3 | D1 | Desktop adapters | pending | - | - |
 | 4 | D1 | Perception (wake/STT/VAD) | pending | - | - |
@@ -47,3 +47,4 @@ Resume rule: read this file first, find the first 'in_progress'/'pending' step, 
 
 ## SESSION LOG (APPEND-ONLY)
 - 2026-06-26 session: completed step 0 (build harness); pytest smoke test passes; linting/formatting verified.
+- 2026-06-26 session: completed step 1 (project skeleton); CLI entrypoint verified; package structure configured.

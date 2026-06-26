@@ -20,3 +20,8 @@ Photos/
 # OS specific files
 .DS_Store
 Thumbs.db
+
+# Build and distribution
+build/
+dist/
+*.egg-info/
