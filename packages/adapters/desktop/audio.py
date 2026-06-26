@@ -85,3 +85,17 @@ class PyAudioAdapter(AudioPort):
                 self._pa = None
 
         await asyncio.to_thread(_close)
+
+    async def flush(self) -> None:
+        """Flush the input stream buffer to prevent lag/stale audio."""
+        if self._input_stream:
+            def _flush():
+                try:
+                    # Read all available frames to clear the buffer
+                    available = self._input_stream.get_read_available()
+                    if available > 0:
+                        self._input_stream.read(available, exception_on_overflow=False)
+                except Exception:
+                    pass
+            await asyncio.to_thread(_flush)
+

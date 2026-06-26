@@ -22,3 +22,8 @@ class AudioPort(Protocol):
     async def close(self) -> None:
         """Close audio streams."""
         ...
+
+    async def flush(self) -> None:
+        """Flush any buffered audio input."""
+        ...
+

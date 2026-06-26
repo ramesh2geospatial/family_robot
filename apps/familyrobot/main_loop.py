@@ -72,6 +72,9 @@ async def _listen_cycle(
 ) -> None:
     """One wake-listen-respond cycle."""
 
+    # Flush any stale audio accumulated from speech/processing before starting a new listening block
+    await audio.flush()
+
     # 1. Wait for wake word
     frame = await audio.read_frame()
     score = await asyncio.to_thread(wakeword.predict, frame)

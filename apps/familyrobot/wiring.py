@@ -26,6 +26,9 @@ class MockAudioAdapter(AudioPort):
     async def close(self) -> None:
         pass
 
+    async def flush(self) -> None:
+        pass
+
 
 class MockCameraAdapter(CameraPort):
     async def open(self, samplerate: int = 16000) -> None:
