@@ -9,7 +9,7 @@ Resume rule: read this file first, find the first 'in_progress'/'pending' step, 
 - **Status**: pending
 - **Next action**: implement Pi adapters
 - **Repo green**: yes
-- **Last commit**: (pending)
+- **Last commit**: 103b761
 
 ## STEP TRACKER
 | # | Stage | Step | Status | Tests | Commit |
@@ -26,7 +26,7 @@ Resume rule: read this file first, find the first 'in_progress'/'pending' step, 
 | 9 | D1 | Companion PWA | done | 13 unit tests passed | (pending) |
 | 10 | D1 | Dockerize (dev) | done | Dockerfile + compose created | (pending) |
 | 11 | D2 | Android adapters | done | 9 contract tests passed | 35b29c9 |
-| 12 | D2 | Real network smart-home | done | 6 unit tests passed | (pending) |
+| 12 | D2 | Real network smart-home | done | 6 unit tests passed | 103b761 |
 | 13 | Pi | Pi adapters | pending | - | - |
 | 14 | Pi | Harden & ship | pending | - | - |
 
