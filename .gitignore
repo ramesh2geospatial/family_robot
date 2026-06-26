@@ -1,0 +1,22 @@
+# Virtual environment
+venv/
+.venv/
+env/
+ENV/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Models and data
+models/
+data/
+secrets.env
+
+# Photos (from transcription process)
+Photos/
+
+# OS specific files
+.DS_Store
+Thumbs.db

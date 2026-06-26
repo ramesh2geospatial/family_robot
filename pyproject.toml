@@ -1,0 +1,87 @@
+[build-system]
+requires = ["setuptools>=61.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "familyrobot"
+version = "0.1.0"
+description = "Low-cost, local-first family companion & home-automation assistant"
+readme = "README.md"
+requires-python = ">=3.11"
+authors = [
+    { name = "FamilyRobot Team" }
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+]
+dependencies = [
+    "fastapi",
+    "uvicorn",
+    "pydantic>=2.0",
+    "pyyaml",
+    "openwakeword",
+    "silero-vad",
+    "faster-whisper",
+    "speechbrain",
+    "onnxruntime",
+    "llama-cpp-python",
+    "sentence-transformers",
+    "piper-tts",
+    "paho-mqtt",
+    "aiomqtt",
+    "python-kasa",
+    "python-broadlink",
+]
+
+[project.optional-dependencies]
+desktop = [
+    "pyaudio",
+    "opencv-python",
+    "sounddevice",
+]
+android = [
+    "sounddevice",
+]
+pi = [
+    "lgpio",
+    "picamera2",
+    "gpiozero",
+]
+cloud = [
+    "openai",
+    "google-generativeai",
+]
+dev = [
+    "pytest",
+    "pytest-asyncio",
+    "pytest-cov",
+    "ruff",
+    "black",
+    "mypy",
+]
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = "-ra -q --strict-markers"
+testpaths = ["tests"]
+markers = [
+    "unit: Unit tests (isolation, mock ports)",
+    "contract: Interface contract tests",
+    "functional: End-to-end pipeline/functional tests",
+    "business: Real family scenario acceptance tests",
+    "slow: Slow running tests",
+    "hardware: Requires native physical hardware or connected device",
+]
+
+[tool.ruff]
+line-length = 88
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
+ignore = []
+
+[tool.black]
+line-length = 88
+target-version = ['py311']
