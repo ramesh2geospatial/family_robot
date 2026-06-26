@@ -9,7 +9,7 @@ Resume rule: read this file first, find the first 'in_progress'/'pending' step, 
 - **Status**: pending
 - **Next action**: implement governance (identity/ACL)
 - **Repo green**: yes
-- **Last commit**: (pending commit)
+- **Last commit**: 88d234d
 
 ## STEP TRACKER
 | # | Stage | Step | Status | Tests | Commit |
