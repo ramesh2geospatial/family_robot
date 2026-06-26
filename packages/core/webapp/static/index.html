@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#1a1a2e">
+    <meta name="description" content="FamilyRobot Companion - Control your smart home assistant">
+    <link rel="manifest" href="/manifest.json">
+    <title>FamilyRobot Companion</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-content">
+                <div class="logo">
+                    <span class="logo-icon">🤖</span>
+                    <h1>FamilyRobot</h1>
+                </div>
+                <div class="status-badge" id="statusBadge">
+                    <span class="status-dot"></span>
+                    <span id="statusText">Connecting...</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Navigation -->
+        <nav class="tab-nav">
+            <button class="tab-btn active" data-tab="control">🏠 Control</button>
+            <button class="tab-btn" data-tab="members">👨‍👩‍👧‍👦 Family</button>
+            <button class="tab-btn" data-tab="memory">🧠 Memory</button>
+        </nav>
+
+        <!-- Tab: Device Control -->
+        <section id="tab-control" class="tab-panel active">
+            <h2>Device Control</h2>
+            <div class="device-grid">
+                <div class="device-card" data-device="living_room_light">
+                    <div class="device-icon">💡</div>
+                    <div class="device-name">Living Room Light</div>
+                    <div class="device-controls">
+                        <button class="btn btn-on" onclick="sendCommand('living_room_light','on')">ON</button>
+                        <button class="btn btn-off" onclick="sendCommand('living_room_light','off')">OFF</button>
+                    </div>
+                    <div class="device-state" id="state-living_room_light">--</div>
+                </div>
+                <div class="device-card" data-device="bedroom_light">
+                    <div class="device-icon">💡</div>
+                    <div class="device-name">Bedroom Light</div>
+                    <div class="device-controls">
+                        <button class="btn btn-on" onclick="sendCommand('bedroom_light','on')">ON</button>
+                        <button class="btn btn-off" onclick="sendCommand('bedroom_light','off')">OFF</button>
+                    </div>
+                    <div class="device-state" id="state-bedroom_light">--</div>
+                </div>
+                <div class="device-card" data-device="kitchen_light">
+                    <div class="device-icon">💡</div>
+                    <div class="device-name">Kitchen Light</div>
+                    <div class="device-controls">
+                        <button class="btn btn-on" onclick="sendCommand('kitchen_light','on')">ON</button>
+                        <button class="btn btn-off" onclick="sendCommand('kitchen_light','off')">OFF</button>
+                    </div>
+                    <div class="device-state" id="state-kitchen_light">--</div>
+                </div>
+                <div class="device-card" data-device="fan">
+                    <div class="device-icon">🌀</div>
+                    <div class="device-name">Fan</div>
+                    <div class="device-controls">
+                        <button class="btn btn-on" onclick="sendCommand('fan','on')">ON</button>
+                        <button class="btn btn-off" onclick="sendCommand('fan','off')">OFF</button>
+                    </div>
+                    <input type="range" min="0" max="100" value="50" class="slider"
+                           oninput="sendLevel('fan', this.value)">
+                    <div class="device-state" id="state-fan">--</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tab: Family Members -->
+        <section id="tab-members" class="tab-panel">
+            <h2>Family Members</h2>
+            <div id="membersList" class="members-list"></div>
+            <div class="enroll-form">
+                <h3>Enroll New Member</h3>
+                <input type="text" id="enrollName" placeholder="Name" class="input">
+                <select id="enrollRole" class="input">
+                    <option value="parent">Parent</option>
+                    <option value="adult">Adult</option>
+                    <option value="teen">Teen</option>
+                    <option value="child">Child</option>
+                    <option value="guest">Guest</option>
+                </select>
+                <select id="enrollLang" class="input">
+                    <option value="en">English</option>
+                    <option value="hi">Hindi</option>
+                    <option value="mr">Marathi</option>
+                </select>
+                <button class="btn btn-primary" onclick="enrollMember()">Enroll</button>
+            </div>
+        </section>
+
+        <!-- Tab: Memory -->
+        <section id="tab-memory" class="tab-panel">
+            <h2>Memory</h2>
+            <div class="memory-search">
+                <input type="text" id="memoryQuery" placeholder="Search memories..." class="input"
+                       onkeypress="if(event.key==='Enter')searchMemory()">
+                <button class="btn btn-primary" onclick="searchMemory()">Search</button>
+            </div>
+            <div id="memoryResults" class="memory-results"></div>
+            <div class="memory-store">
+                <h3>Store New Memory</h3>
+                <textarea id="memoryText" placeholder="What should I remember?" class="input textarea"></textarea>
+                <button class="btn btn-primary" onclick="storeMemory()">Save</button>
+            </div>
+        </section>
+
+        <!-- Toast notification -->
+        <div id="toast" class="toast"></div>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,68 @@
+# FamilyRobot – Docker Compose (development)
+#
+# Services:
+#   core  – Voice pipeline + orchestrator (runs on host for audio access)
+#   web   – Companion PWA (FastAPI on port 8080)
+#   mqtt  – Eclipse Mosquitto broker (port 1883)
+#
+# Usage:
+#   docker compose up -d
+#   Open http://localhost:8080 on your phone (same Wi-Fi)
+
+services:
+  # ── MQTT Broker ────────────────────────────────────────────────
+  mqtt:
+    image: eclipse-mosquitto:2
+    container_name: familyrobot-mqtt
+    ports:
+      - "1883:1883"
+      - "9001:9001"  # WebSocket
+    volumes:
+      - ./mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+      - mqtt-data:/mosquitto/data
+      - mqtt-log:/mosquitto/log
+    restart: unless-stopped
+
+  # ── Web (Companion PWA) ───────────────────────────────────────
+  web:
+    build:
+      context: ../..
+      dockerfile: deploy/docker/Dockerfile
+    container_name: familyrobot-web
+    ports:
+      - "8080:8080"
+    volumes:
+      - ../../config:/app/config:ro
+      - app-data:/app/data
+    environment:
+      - FAMILYROBOT_PLATFORM=desktop
+      - PYTHONPATH=/app
+    depends_on:
+      - mqtt
+    restart: unless-stopped
+
+  # ── Core (voice loop) – runs on host for audio hardware ────────
+  # Uncomment to run core in Docker (requires PulseAudio forwarding)
+  # core:
+  #   build:
+  #     context: ../..
+  #     dockerfile: deploy/docker/Dockerfile
+  #   container_name: familyrobot-core
+  #   command: ["python", "-m", "apps.familyrobot"]
+  #   volumes:
+  #     - ../../config:/app/config:ro
+  #     - ../../models:/app/models:ro
+  #     - app-data:/app/data
+  #   environment:
+  #     - FAMILYROBOT_PLATFORM=desktop
+  #     - PYTHONPATH=/app
+  #   devices:
+  #     - /dev/snd:/dev/snd
+  #   depends_on:
+  #     - mqtt
+  #   restart: unless-stopped
+
+volumes:
+  mqtt-data:
+  mqtt-log:
+  app-data:
