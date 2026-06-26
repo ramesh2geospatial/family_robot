@@ -31,6 +31,10 @@ class AppConfig(BaseModel):
     # Expression (TTS) settings
     tts_model_path: Optional[str] = None
 
+    # Logging settings
+    conversation_log_path: str = "data/conversations.jsonl"
+
+
 
 
 def load_yaml(path: Path) -> Dict[str, Any]:

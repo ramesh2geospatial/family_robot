@@ -11,6 +11,7 @@ import pytest
 
 from packages.core.governance.acl import ACL, ACLResult
 from packages.core.governance.audit_log import AuditLog
+from packages.core.governance.conversation_log import ConversationLogger
 from packages.core.governance.identity import (
     UNKNOWN_USER,
     FamilyMember,
@@ -214,3 +215,38 @@ class TestAuditLog:
         entries = log.read_recent(3)
         assert len(entries) == 3
         assert entries[-1]["event"] == "event_9"
+
+
+# ──────────────────────────────────────────────
+# Conversation Logger
+# ──────────────────────────────────────────────
+
+@pytest.mark.unit
+class TestConversationLogger:
+
+    def test_log_interaction_and_read(self, tmp_path: Path) -> None:
+        log = ConversationLogger(log_path=str(tmp_path / "conversations.jsonl"))
+        log.log_interaction(
+            user_id="u1",
+            user_role="parent",
+            audio_duration_s=2.5,
+            detected_language="en",
+            raw_text="hello puppy",
+            intent="general_chat",
+            intent_confidence=0.9,
+            response_text="Hello!",
+            processing_time_s=0.15,
+            tts_engine="pyttsx3"
+        )
+
+        entries = log.get_recent(5)
+        assert len(entries) == 1
+        assert entries[0]["user_id"] == "u1"
+        assert entries[0]["input_text"] == "hello puppy"
+        assert entries[0]["response_text"] == "Hello!"
+        assert entries[0]["processing_time_s"] == 0.15
+
+    def test_get_recent_empty(self, tmp_path: Path) -> None:
+        log = ConversationLogger(log_path=str(tmp_path / "empty.jsonl"))
+        assert log.get_recent() == []
+

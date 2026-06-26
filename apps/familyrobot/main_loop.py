@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import time
 
 from packages.core.expression.response_formatter import format_response
 
@@ -46,11 +47,14 @@ async def run_loop(
     await audio.open_input(samplerate=16000)
     logger.info("FamilyRobot loop started. Listening for wake word…")
 
+    conversation_logger = components.get("conversation_logger")
+
     try:
         while not shutdown_event.is_set():
             await _listen_cycle(
                 audio, home, llm, memory, tts,
                 wakeword, vad, stt, intent_router,
+                conversation_logger,
                 shutdown_event,
             )
     except asyncio.CancelledError:
@@ -63,6 +67,7 @@ async def run_loop(
 async def _listen_cycle(
     audio, home, llm, memory, tts,
     wakeword, vad, stt, intent_router,
+    conversation_logger,
     shutdown_event: asyncio.Event,
 ) -> None:
     """One wake-listen-respond cycle."""
@@ -96,16 +101,36 @@ async def _listen_cycle(
         return
 
     # 3. Transcribe
+    start_time = time.perf_counter()
     all_audio = b"".join(speech_frames)
     try:
         text, lang = await asyncio.to_thread(stt.transcribe, all_audio)
     except Exception as exc:
         logger.error("STT failed: %s", exc)
         await _speak(tts, audio, _FALLBACK_MSG)
+        if conversation_logger:
+            processing_time = time.perf_counter() - start_time
+            conversation_logger.log_interaction(
+                raw_text="<STT_FAILED>",
+                response_text=_FALLBACK_MSG,
+                processing_time_s=processing_time,
+                audio_duration_s=len(speech_frames) * 0.1,
+                tts_engine="piper" if getattr(tts, "_use_piper", False) else "pyttsx3"
+            )
         return
 
     if not text or not text.strip():
         logger.info("Empty transcription, ignoring.")
+        if conversation_logger:
+            processing_time = time.perf_counter() - start_time
+            conversation_logger.log_interaction(
+                detected_language=lang,
+                raw_text="<EMPTY>",
+                response_text="",
+                processing_time_s=processing_time,
+                audio_duration_s=len(speech_frames) * 0.1,
+                tts_engine="none"
+            )
         return
 
     logger.info("Transcribed: '%s' [%s]", text, lang)
@@ -123,6 +148,19 @@ async def _listen_cycle(
 
     logger.info("Robot response: %s", response)
     await _speak(tts, audio, response)
+
+    if conversation_logger:
+        processing_time = time.perf_counter() - start_time
+        conversation_logger.log_interaction(
+            detected_language=lang,
+            raw_text=text,
+            intent=intent.name if 'intent' in locals() else "unknown",
+            intent_confidence=intent.confidence if 'intent' in locals() else 0.0,
+            response_text=response,
+            processing_time_s=processing_time,
+            audio_duration_s=len(speech_frames) * 0.1,
+            tts_engine="piper" if getattr(tts, "_use_piper", False) else "pyttsx3"
+        )
 
 
 async def _handle_intent(intent, text: str, home, llm, memory) -> str:

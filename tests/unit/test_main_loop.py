@@ -75,6 +75,9 @@ def _mock_components(
         return_value=intent or Intent(name="general_chat", confidence=0.5)
     )
 
+    cl = MagicMock()
+    cl.log_interaction = MagicMock()
+
     return {
         "audio": audio,
         "home": home,
@@ -85,6 +88,7 @@ def _mock_components(
         "vad": vad,
         "stt": stt,
         "intent_router": ir,
+        "conversation_logger": cl,
     }
 
 
@@ -183,3 +187,22 @@ class TestRunLoop:
         shutdown.set()  # immediate shutdown
         await run_loop(comps, shutdown_event=shutdown)
         comps["audio"].close.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_loop_calls_conversation_logger(self) -> None:
+        """Loop should log the interaction via conversation_logger."""
+        comps = _mock_components(wake_score=0.9, vad_end_after=1, transcription="test hello")
+        shutdown = asyncio.Event()
+
+        # Set shutdown inside the audio play mock so the loop exits after one speak/log cycle
+        comps["audio"].play.side_effect = lambda *args, **kwargs: shutdown.set()
+
+        # Safety fallback: shut down if it runs too long
+        async def run_and_stop():
+            await asyncio.sleep(0.5)
+            shutdown.set()
+        asyncio.create_task(run_and_stop())
+
+        await run_loop(comps, shutdown_event=shutdown)
+        comps["conversation_logger"].log_interaction.assert_called_once()
+

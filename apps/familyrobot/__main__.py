@@ -19,6 +19,7 @@ from apps.familyrobot.wiring import wire_components
 from packages.core.cognition import IntentRouter, LlamaLLMClient
 from packages.core.config import AppConfig, load_config
 from packages.core.expression import PiperTTSEngine
+from packages.core.governance import ConversationLogger
 from packages.core.memory import MemoryStore
 from packages.core.perception import SpeechToText, VoiceActivityDetector, WakeWordDetector
 
@@ -48,6 +49,11 @@ def _build_components(config: AppConfig) -> dict:
         model_path=config.tts_model_path,
     )
 
+    # Governance
+    conversation_logger = ConversationLogger(
+        log_path=config.conversation_log_path,
+    )
+
     return {
         "audio": wired.audio,
         "camera": wired.camera,
@@ -61,6 +67,7 @@ def _build_components(config: AppConfig) -> dict:
         "memory": memory,
         "intent_router": intent_router,
         "tts": tts,
+        "conversation_logger": conversation_logger,
     }
 
 
