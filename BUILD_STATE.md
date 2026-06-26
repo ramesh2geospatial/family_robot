@@ -9,7 +9,7 @@ Resume rule: read this file first, find the first 'in_progress'/'pending' step, 
 - **Status**: pending
 - **Next action**: implement real network smart-home over MQTT
 - **Repo green**: yes
-- **Last commit**: (pending)
+- **Last commit**: 35b29c9
 
 ## STEP TRACKER
 | # | Stage | Step | Status | Tests | Commit |
@@ -25,7 +25,7 @@ Resume rule: read this file first, find the first 'in_progress'/'pending' step, 
 | 8 | D1 | First skills | done | 21 unit tests passed | (pending) |
 | 9 | D1 | Companion PWA | done | 13 unit tests passed | (pending) |
 | 10 | D1 | Dockerize (dev) | done | Dockerfile + compose created | (pending) |
-| 11 | D2 | Android adapters | done | 9 contract tests passed | (pending) |
+| 11 | D2 | Android adapters | done | 9 contract tests passed | 35b29c9 |
 | 12 | D2 | Real network smart-home | pending | - | - |
 | 13 | Pi | Pi adapters | pending | - | - |
 | 14 | Pi | Harden & ship | pending | - | - |
