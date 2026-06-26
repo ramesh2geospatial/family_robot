@@ -135,3 +135,24 @@ def test_stt_transcribe_exception():
 
         assert text == ""
         assert lang == ""
+
+
+@pytest.mark.unit
+def test_vad_detector_events():
+    """Test VoiceActivityDetector returning speech start/end events."""
+    with (
+        patch("silero_vad.load_silero_vad") as mock_load,
+        patch("silero_vad.VADIterator") as mock_iterator_cls,
+    ):
+        mock_model = MagicMock()
+        mock_load.return_value = mock_model
+
+        mock_iterator = MagicMock()
+        # Return a speech start event on first chunk call
+        mock_iterator.return_value = {"start": 16000}
+        mock_iterator_cls.return_value = mock_iterator
+
+        vad = VoiceActivityDetector()
+        res = vad.process_chunk(b"\x00" * 1024)
+        assert res == {"start": 16000}
+

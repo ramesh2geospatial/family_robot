@@ -36,16 +36,16 @@ def _build_components(config: AppConfig) -> dict:
 
     # Cognition
     llm = LlamaLLMClient(
-        model_path=getattr(config, "llm_model_path", "models/llama-3.2-3b.Q4_K_M.gguf"),
+        model_path=config.llm_model_path,
     )
     memory = MemoryStore(
-        db_path=getattr(config, "memory_db_path", "data/memory.db"),
+        db_path=config.memory_db_path,
     )
     intent_router = IntentRouter(llm=llm)
 
     # Expression
     tts = PiperTTSEngine(
-        model_path=getattr(config, "tts_model_path", None),
+        model_path=config.tts_model_path,
     )
 
     return {

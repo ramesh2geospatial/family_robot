@@ -5,13 +5,6 @@ Dynamic components wiring system based on selected platform.
 from dataclasses import dataclass
 from typing import Any, Callable, Dict, Optional
 
-from packages.adapters.desktop import (
-    DesktopHomeAdapter,
-    DesktopNotifyAdapter,
-    DesktopPowerAdapter,
-    OpenCVCameraAdapter,
-    PyAudioAdapter,
-)
 from packages.core.config import AppConfig
 from packages.core.ports.audio import AudioPort
 from packages.core.ports.camera import CameraPort
@@ -89,6 +82,13 @@ class WiredComponents:
 def wire_components(config: AppConfig) -> WiredComponents:
     """Wire and return components based on platform configuration."""
     if config.platform == "desktop":
+        from packages.adapters.desktop import (
+            DesktopHomeAdapter,
+            DesktopNotifyAdapter,
+            DesktopPowerAdapter,
+            OpenCVCameraAdapter,
+            PyAudioAdapter,
+        )
         return WiredComponents(
             audio=PyAudioAdapter(),
             camera=OpenCVCameraAdapter(),

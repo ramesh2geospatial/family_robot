@@ -19,6 +19,19 @@ class AppConfig(BaseModel):
     platform: str = "desktop"
     system: SystemConfig = Field(default_factory=SystemConfig)
 
+    # Cognition (LLM) settings
+    llm_model_path: str = "models/llama-3.2-3b.Q4_K_M.gguf"
+    llm_n_ctx: int = 2048
+    llm_n_threads: int = 4
+
+    # Memory settings
+    memory_db_path: str = "data/memory.db"
+    embedding_model: Optional[str] = "all-MiniLM-L6-v2"
+
+    # Expression (TTS) settings
+    tts_model_path: Optional[str] = None
+
+
 
 def load_yaml(path: Path) -> Dict[str, Any]:
     if not path.exists():
