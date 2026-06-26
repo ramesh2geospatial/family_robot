@@ -1,0 +1,21 @@
+name: memory_admin
+languages: [en, hi, mr]
+intents:
+  - id: memory_admin.store
+    utterances:
+      en: ["remember that {fact}", "save this: {fact}", "note that {fact}"]
+      hi: ["{fact} yaad rakhna", "yeh save karo: {fact}"]
+      mr: ["{fact} lakshaat thev", "he save kar: {fact}"]
+    slots: {fact: {type: str, required: true}}
+  - id: memory_admin.recall
+    utterances:
+      en: ["do you remember {query}", "what do you know about {query}"]
+      hi: ["{query} ke baare mein batao"]
+    slots: {query: {type: str, required: true}}
+  - id: memory_admin.forget
+    utterances:
+      en: ["forget that", "delete that memory", "remove that"]
+    slots: {}
+required_permissions: [memory_write]
+hardware_deps: []
+offline_capable: true

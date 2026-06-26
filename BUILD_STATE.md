@@ -5,11 +5,11 @@ Resume rule: read this file first, find the first 'in_progress'/'pending' step, 
 
 ## CURRENT
 - **Stage**: D1 Desktop
-- **Active step**: 7
+- **Active step**: 9
 - **Status**: pending
-- **Next action**: implement governance (identity/ACL)
+- **Next action**: implement Companion PWA
 - **Repo green**: yes
-- **Last commit**: 88d234d
+- **Last commit**: (pending commit)
 
 ## STEP TRACKER
 | # | Stage | Step | Status | Tests | Commit |
@@ -21,8 +21,8 @@ Resume rule: read this file first, find the first 'in_progress'/'pending' step, 
 | 4 | D1 | Perception (wake/STT/VAD) | done | unit tests passed | b1012d9 |
 | 5 | D1 | Cognition + memory | done | 52 unit tests passed | (pending) |
 | 6 | D1 | Expression + loop | done | 52 unit tests passed | (pending) |
-| 7 | D1 | Governance (identity/ACL) | pending | - | - |
-| 8 | D1 | First skills | pending | - | - |
+| 7 | D1 | Governance (identity/ACL) | done | 29 unit tests passed | (pending) |
+| 8 | D1 | First skills | done | 21 unit tests passed | (pending) |
 | 9 | D1 | Companion PWA | pending | - | - |
 | 10 | D1 | Dockerize (dev) | pending | - | - |
 | 11 | D2 | Android adapters | pending | - | - |
@@ -52,4 +52,5 @@ Resume rule: read this file first, find the first 'in_progress'/'pending' step, 
 - 2026-06-26 session: completed step 3 (desktop adapters); implemented PyAudio input/output, OpenCV VideoCapture webcam, and logging mock home/power/notify adapters; contract tests created and passed.
 - 2026-06-26 session: completed step 4 (perception); implemented openWakeWord detector with ONNX fallback, Silero VADIterator, faster-whisper small STT, and unit tests.
 - 2026-06-26 session: completed steps 5+6 (cognition+memory+expression+loop); implemented LlamaLLMClient (llama-cpp-python), MemoryStore (SQLite WAL + cosine fallback), IntentRouter (6 intents + LLM fallback), PiperTTSEngine (pyttsx3 fallback), ResponseFormatter, main orchestrator loop, and full entry point; 52 unit tests passed.
+- 2026-06-26 session: completed steps 7+8 (governance+skills); implemented Role/FamilyMember/IdentityStore, ACL permission matrix (5 roles × 11 permissions with polite denials), AuditLog (JSON lines), BaseSkill/SkillRegistry framework, and 4 skills (lights, reminders, memory_admin, assistant with manifests); 103 total unit tests passed. Step 3 audit confirmed full compliance with original plan.
 

@@ -1,0 +1,23 @@
+name: lights
+languages: [en, hi, mr]
+intents:
+  - id: lights.on
+    utterances:
+      en: ["turn on the {room} light", "switch on light", "lights on"]
+      hi: ["{room} ki light chalu karo", "light on karo"]
+      mr: ["{room} cha light lav", "light chalu kar"]
+    slots: {room: {type: room, required: false}}
+  - id: lights.off
+    utterances:
+      en: ["turn off the {room} light", "switch off light", "lights off"]
+      hi: ["{room} ki light bandh karo", "light off karo"]
+      mr: ["{room} cha light band kar"]
+    slots: {room: {type: room, required: false}}
+  - id: lights.dim
+    utterances:
+      en: ["dim the {room} light to {pct} percent"]
+      hi: ["{room} ki light {pct} percent karo"]
+    slots: {room: {type: room}, pct: {type: int, required: true}}
+required_permissions: [control_lights]
+hardware_deps: [home]
+offline_capable: true

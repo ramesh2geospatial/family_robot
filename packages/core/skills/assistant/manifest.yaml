@@ -1,0 +1,12 @@
+name: assistant
+languages: [en, hi, mr]
+intents:
+  - id: assistant.chat
+    utterances:
+      en: ["*"]  # catch-all
+      hi: ["*"]
+      mr: ["*"]
+    slots: {}
+required_permissions: [general_info]
+hardware_deps: []
+offline_capable: true

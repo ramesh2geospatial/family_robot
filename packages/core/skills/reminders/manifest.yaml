@@ -1,0 +1,21 @@
+name: reminders
+languages: [en, hi, mr]
+intents:
+  - id: reminders.set
+    utterances:
+      en: ["remind me to {task}", "set a reminder for {task}", "remind me in {duration}"]
+      hi: ["mujhe {task} yaad dilao", "{duration} baad yaad dilana"]
+      mr: ["mala {task} athvan kar", "{duration} nantar athvan kar"]
+    slots: {task: {type: str}, duration: {type: duration}}
+  - id: reminders.list
+    utterances:
+      en: ["list my reminders", "what reminders do I have"]
+      hi: ["mere reminders dikhao"]
+    slots: {}
+  - id: reminders.cancel
+    utterances:
+      en: ["cancel reminder", "remove reminder"]
+    slots: {}
+required_permissions: [general_info]
+hardware_deps: []
+offline_capable: true
