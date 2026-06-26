@@ -9,7 +9,7 @@ Resume rule: read this file first, find the first 'in_progress'/'pending' step, 
 - **Status**: pending
 - **Next action**: implement cognition + memory (LLM client, SQLite WAL + sqlite-vec, intent router)
 - **Repo green**: yes
-- **Last commit**: b1012d9
+- **Last commit**: 1c23652
 
 ## STEP TRACKER
 | # | Stage | Step | Status | Tests | Commit |
