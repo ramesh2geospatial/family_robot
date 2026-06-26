@@ -5,11 +5,11 @@ Resume rule: read this file first, find the first 'in_progress'/'pending' step, 
 
 ## CURRENT
 - **Stage**: D1 Desktop
-- **Active step**: 5
+- **Active step**: 7
 - **Status**: pending
-- **Next action**: implement cognition + memory (LLM client, SQLite WAL + sqlite-vec, intent router)
+- **Next action**: implement governance (identity/ACL)
 - **Repo green**: yes
-- **Last commit**: 1c23652
+- **Last commit**: (pending commit)
 
 ## STEP TRACKER
 | # | Stage | Step | Status | Tests | Commit |
@@ -19,8 +19,8 @@ Resume rule: read this file first, find the first 'in_progress'/'pending' step, 
 | 2 | D1 | Ports + config + wiring | done | unit tests passed | 577af91 |
 | 3 | D1 | Desktop adapters | done | contract tests passed | 3e2091d |
 | 4 | D1 | Perception (wake/STT/VAD) | done | unit tests passed | b1012d9 |
-| 5 | D1 | Cognition + memory | pending | - | - |
-| 6 | D1 | Expression + loop | pending | - | - |
+| 5 | D1 | Cognition + memory | done | 52 unit tests passed | (pending) |
+| 6 | D1 | Expression + loop | done | 52 unit tests passed | (pending) |
 | 7 | D1 | Governance (identity/ACL) | pending | - | - |
 | 8 | D1 | First skills | pending | - | - |
 | 9 | D1 | Companion PWA | pending | - | - |
@@ -51,4 +51,5 @@ Resume rule: read this file first, find the first 'in_progress'/'pending' step, 
 - 2026-06-26 session: completed step 2 (ports + config + wiring); typing protocols created; Pydantic configuration loader and dynamic wiring logic implemented and unit tested.
 - 2026-06-26 session: completed step 3 (desktop adapters); implemented PyAudio input/output, OpenCV VideoCapture webcam, and logging mock home/power/notify adapters; contract tests created and passed.
 - 2026-06-26 session: completed step 4 (perception); implemented openWakeWord detector with ONNX fallback, Silero VADIterator, faster-whisper small STT, and unit tests.
+- 2026-06-26 session: completed steps 5+6 (cognition+memory+expression+loop); implemented LlamaLLMClient (llama-cpp-python), MemoryStore (SQLite WAL + cosine fallback), IntentRouter (6 intents + LLM fallback), PiperTTSEngine (pyttsx3 fallback), ResponseFormatter, main orchestrator loop, and full entry point; 52 unit tests passed.
 

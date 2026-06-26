@@ -32,6 +32,8 @@ dependencies = [
     "aiomqtt",
     "python-kasa",
     "broadlink",
+    "pyttsx3",
+    "sqlite-vec",
 ]
 
 [project.optional-dependencies]
