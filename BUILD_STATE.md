@@ -5,11 +5,11 @@ Resume rule: read this file first, find the first 'in_progress'/'pending' step, 
 
 ## CURRENT
 - **Stage**: D1 Desktop
-- **Active step**: 3
-- **Status**: in_progress
-- **Next action**: implement desktop platform adapters (Audio, Camera, Home, Power)
+- **Active step**: 4
+- **Status**: pending
+- **Next action**: implement perception (wakeword, VAD, STT)
 - **Repo green**: yes
-- **Last commit**: 577af91
+- **Last commit**: 6b08b91
 
 ## STEP TRACKER
 | # | Stage | Step | Status | Tests | Commit |
@@ -17,7 +17,7 @@ Resume rule: read this file first, find the first 'in_progress'/'pending' step, 
 | 0 | D0 | Build harness (tests, ledger, lint) | done | smoke tests passed | a8cfbb2 |
 | 1 | D1 | Project skeleton | done | cli help passes | a05ecc8 |
 | 2 | D1 | Ports + config + wiring | done | unit tests passed | 577af91 |
-| 3 | D1 | Desktop adapters | in_progress | - | - |
+| 3 | D1 | Desktop adapters | done | contract tests passed | 6b08b91 |
 | 4 | D1 | Perception (wake/STT/VAD) | pending | - | - |
 | 5 | D1 | Cognition + memory | pending | - | - |
 | 6 | D1 | Expression + loop | pending | - | - |
@@ -49,3 +49,4 @@ Resume rule: read this file first, find the first 'in_progress'/'pending' step, 
 - 2026-06-26 session: completed step 0 (build harness); pytest smoke test passes; linting/formatting verified.
 - 2026-06-26 session: completed step 1 (project skeleton); CLI entrypoint verified; package structure configured.
 - 2026-06-26 session: completed step 2 (ports + config + wiring); typing protocols created; Pydantic configuration loader and dynamic wiring logic implemented and unit tested.
+- 2026-06-26 session: completed step 3 (desktop adapters); implemented PyAudio input/output, OpenCV VideoCapture webcam, and logging mock home/power/notify adapters; contract tests created and passed.

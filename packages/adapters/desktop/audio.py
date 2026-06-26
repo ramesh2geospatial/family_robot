@@ -4,6 +4,7 @@ Desktop audio adapter using PyAudio.
 
 import asyncio
 from typing import Optional
+
 import pyaudio
 
 from packages.core.ports.audio import AudioPort
@@ -21,7 +22,7 @@ class PyAudioAdapter(AudioPort):
         if self._pa is None:
             self._pa = pyaudio.PyAudio()
         self._samplerate = samplerate
-        
+
         def _open():
             return self._pa.open(
                 format=pyaudio.paInt16,
@@ -30,7 +31,7 @@ class PyAudioAdapter(AudioPort):
                 input=True,
                 frames_per_buffer=1600,  # 100ms frames
             )
-        
+
         self._input_stream = await asyncio.to_thread(_open)
 
     async def read_frame(self) -> bytes:
@@ -67,6 +68,7 @@ class PyAudioAdapter(AudioPort):
 
     async def close(self) -> None:
         """Close audio streams."""
+
         def _close():
             if self._input_stream:
                 try:

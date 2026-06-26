@@ -5,19 +5,19 @@ Dynamic components wiring system based on selected platform.
 from dataclasses import dataclass
 from typing import Any, Callable, Dict, Optional
 
+from packages.adapters.desktop import (
+    DesktopHomeAdapter,
+    DesktopNotifyAdapter,
+    DesktopPowerAdapter,
+    OpenCVCameraAdapter,
+    PyAudioAdapter,
+)
 from packages.core.config import AppConfig
 from packages.core.ports.audio import AudioPort
 from packages.core.ports.camera import CameraPort
 from packages.core.ports.home import HomePort
 from packages.core.ports.notify import NotifyPort
 from packages.core.ports.power import PowerPort
-from packages.adapters.desktop import (
-    PyAudioAdapter,
-    OpenCVCameraAdapter,
-    DesktopHomeAdapter,
-    DesktopPowerAdapter,
-    DesktopNotifyAdapter,
-)
 
 
 class MockAudioAdapter(AudioPort):

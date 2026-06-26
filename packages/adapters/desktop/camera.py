@@ -4,6 +4,7 @@ Desktop camera adapter using OpenCV.
 
 import asyncio
 from typing import Any, Optional
+
 import cv2
 
 from packages.core.ports.camera import CameraPort
@@ -16,6 +17,7 @@ class OpenCVCameraAdapter(CameraPort):
 
     async def open(self, samplerate: int = 16000) -> None:
         """Open the camera interface."""
+
         def _open():
             cap = cv2.VideoCapture(self.device_index)
             if not cap.isOpened():
@@ -39,6 +41,7 @@ class OpenCVCameraAdapter(CameraPort):
 
     async def close(self) -> None:
         """Close the camera interface."""
+
         def _close():
             if self._cap:
                 self._cap.release()
