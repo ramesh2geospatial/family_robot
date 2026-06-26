@@ -28,7 +28,19 @@ logger = logging.getLogger(__name__)
 
 def _build_components(config: AppConfig) -> dict:
     """Wire all components from *config* into a single dict."""
-    wired = wire_components(config)
+    mqtt_client = None
+    if config.home_type == "real":
+        from packages.core.home.mqtt_client import MqttHomeClient
+
+        mqtt_client = MqttHomeClient(
+            host=config.mqtt.host,
+            port=config.mqtt.port,
+            username=config.mqtt.username,
+            password=config.mqtt.password,
+            use_tls=config.mqtt.use_tls,
+        )
+
+    wired = wire_components(config, mqtt_client=mqtt_client)
 
     # Perception
     wakeword = WakeWordDetector(wake_word=config.system.wake_word)
@@ -60,6 +72,7 @@ def _build_components(config: AppConfig) -> dict:
         "home": wired.home,
         "power": wired.power,
         "notify": wired.notify,
+        "mqtt_client": mqtt_client,
         "wakeword": wakeword,
         "vad": vad,
         "stt": stt,

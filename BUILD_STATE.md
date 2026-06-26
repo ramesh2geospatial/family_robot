@@ -4,12 +4,12 @@ The autonomous builder (see [BUILD_PROMPT.md](BUILD_PROMPT.md)) updates this fil
 Resume rule: read this file first, find the first 'in_progress'/'pending' step, continue.
 
 ## CURRENT
-- **Stage**: D2 Android
-- **Active step**: 12
+- **Stage**: Pi
+- **Active step**: 13
 - **Status**: pending
-- **Next action**: implement real network smart-home over MQTT
+- **Next action**: implement Pi adapters
 - **Repo green**: yes
-- **Last commit**: 35b29c9
+- **Last commit**: (pending)
 
 ## STEP TRACKER
 | # | Stage | Step | Status | Tests | Commit |
@@ -26,7 +26,7 @@ Resume rule: read this file first, find the first 'in_progress'/'pending' step, 
 | 9 | D1 | Companion PWA | done | 13 unit tests passed | (pending) |
 | 10 | D1 | Dockerize (dev) | done | Dockerfile + compose created | (pending) |
 | 11 | D2 | Android adapters | done | 9 contract tests passed | 35b29c9 |
-| 12 | D2 | Real network smart-home | pending | - | - |
+| 12 | D2 | Real network smart-home | done | 6 unit tests passed | (pending) |
 | 13 | Pi | Pi adapters | pending | - | - |
 | 14 | Pi | Harden & ship | pending | - | - |
 
@@ -56,6 +56,6 @@ Resume rule: read this file first, find the first 'in_progress'/'pending' step, 
 - 2026-06-27 session: completed steps 9+10 (PWA+Docker); FastAPI backend with REST endpoints (device control, enrollment, memory CRUD, status), PWA frontend (dark theme, tabbed UI, service worker), Dockerfile (python:3.11-slim-bookworm), docker-compose (web+mqtt+core), Mosquitto config; 116 total unit tests passed. Stage D1 Desktop complete.
 - 2026-06-27 session: fixed all minor issues from the Step 2 & 4 audit: modeled all `desktop.yaml` fields inside `AppConfig`, converted main orchestrator to use direct attribute access, made desktop adapter imports conditional in `wiring.py` to prevent import issues on other platforms (like Android/Pi), set up a dynamic ML/hardware library mock injector in `tests/conftest.py` so the entire test suite can be run on clean environments, and added VAD event detection tests; all 137 unit and contract tests passed.
 - 2026-06-27 session: completed step 11 (Android adapters); implemented Termux adapters for audio (PulseAudio + fallback), camera (stream URL + termux-camera-photo), home (in-memory), power (termux-battery-status + low power monitor), and notify (termux-notification); added setup.sh deployment script and comprehensive contract tests; all 149 tests green.
-
+- 2026-06-27 session: completed step 12 (Real network smart-home); implemented shared MqttHomeClient and RealHomeAdapter routing switch/dimmer/IR commands to Tasmota (MQTT), TP-Link Kasa (async APIs), and Broadlink RM blasters; added unit/integration tests; all 155 tests green.
 
 

@@ -43,6 +43,11 @@ async def run_loop(
     stt = components["stt"]
     intent_router = components["intent_router"]
 
+    mqtt_client = components.get("mqtt_client")
+    if mqtt_client:
+        logger.info("Starting MQTT client...")
+        await mqtt_client.start()
+
     logger.info("Opening audio input…")
     await audio.open_input(samplerate=16000)
     logger.info("FamilyRobot loop started. Listening for wake word…")
@@ -61,6 +66,9 @@ async def run_loop(
         logger.info("Loop cancelled.")
     finally:
         await audio.close()
+        if mqtt_client:
+            logger.info("Stopping MQTT client...")
+            await mqtt_client.stop()
         logger.info("Audio closed. Loop exited.")
 
 

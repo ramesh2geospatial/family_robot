@@ -82,8 +82,17 @@ class WiredComponents:
     notify: NotifyPort
 
 
-def wire_components(config: AppConfig) -> WiredComponents:
+def wire_components(
+    config: AppConfig, mqtt_client: Optional[Any] = None
+) -> WiredComponents:
     """Wire and return components based on platform configuration."""
+    if config.home_type == "real":
+        from packages.core.home.adapter import RealHomeAdapter
+
+        home_adapter = RealHomeAdapter(config, mqtt_client)
+    else:
+        home_adapter = None
+
     if config.platform == "desktop":
         from packages.adapters.desktop import (
             DesktopHomeAdapter,
@@ -95,7 +104,7 @@ def wire_components(config: AppConfig) -> WiredComponents:
         return WiredComponents(
             audio=PyAudioAdapter(),
             camera=OpenCVCameraAdapter(),
-            home=DesktopHomeAdapter(),
+            home=home_adapter or DesktopHomeAdapter(),
             power=DesktopPowerAdapter(),
             notify=DesktopNotifyAdapter(),
         )
@@ -110,7 +119,7 @@ def wire_components(config: AppConfig) -> WiredComponents:
         return WiredComponents(
             audio=TermuxAudioAdapter(),
             camera=TermuxCameraAdapter(),
-            home=TermuxHomeAdapter(),
+            home=home_adapter or TermuxHomeAdapter(),
             power=TermuxPowerAdapter(),
             notify=TermuxNotifyAdapter(),
         )
@@ -119,7 +128,7 @@ def wire_components(config: AppConfig) -> WiredComponents:
     return WiredComponents(
         audio=MockAudioAdapter(),
         camera=MockCameraAdapter(),
-        home=MockHomeAdapter(),
+        home=home_adapter or MockHomeAdapter(),
         power=MockPowerAdapter(),
         notify=MockNotifyAdapter(),
     )

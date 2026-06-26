@@ -3,3 +3,17 @@ system:
   name: FamilyRobot
   wake_word: "Hello Puppy"
   language: en
+
+# Smart Home default configuration
+home_type: mock
+mqtt:
+  host: localhost
+  port: 1883
+home_devices:
+  living_room_light:
+    type: mock
+    address: "living_room_light"
+  fan:
+    type: mock
+    address: "fan"
+

@@ -9,6 +9,21 @@ import yaml
 from pydantic import BaseModel, Field
 
 
+class MqttConfig(BaseModel):
+    host: str = "localhost"
+    port: int = 1883
+    username: Optional[str] = None
+    password: Optional[str] = None
+    use_tls: bool = False
+
+
+class SmartDeviceConfig(BaseModel):
+    type: str  # "tasmota" | "kasa" | "broadlink" | "mock"
+    address: str  # Topic for Tasmota, IP for Kasa/Broadlink
+    mac: Optional[str] = None
+    ir_commands: Optional[Dict[str, str]] = None
+
+
 class SystemConfig(BaseModel):
     name: str = "FamilyRobot"
     wake_word: str = "Hello Puppy"
@@ -33,6 +48,11 @@ class AppConfig(BaseModel):
 
     # Logging settings
     conversation_log_path: str = "data/conversations.jsonl"
+
+    # Smart home settings
+    home_type: str = "mock"
+    mqtt: MqttConfig = Field(default_factory=MqttConfig)
+    home_devices: Dict[str, SmartDeviceConfig] = Field(default_factory=dict)
 
 
 
