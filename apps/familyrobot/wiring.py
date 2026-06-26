@@ -99,6 +99,21 @@ def wire_components(config: AppConfig) -> WiredComponents:
             power=DesktopPowerAdapter(),
             notify=DesktopNotifyAdapter(),
         )
+    elif config.platform == "android":
+        from packages.adapters.android import (
+            TermuxAudioAdapter,
+            TermuxCameraAdapter,
+            TermuxHomeAdapter,
+            TermuxNotifyAdapter,
+            TermuxPowerAdapter,
+        )
+        return WiredComponents(
+            audio=TermuxAudioAdapter(),
+            camera=TermuxCameraAdapter(),
+            home=TermuxHomeAdapter(),
+            power=TermuxPowerAdapter(),
+            notify=TermuxNotifyAdapter(),
+        )
 
     # Fallback to mocks for unsupported / pending platforms
     return WiredComponents(

@@ -5,11 +5,11 @@ Resume rule: read this file first, find the first 'in_progress'/'pending' step, 
 
 ## CURRENT
 - **Stage**: D2 Android
-- **Active step**: 11
+- **Active step**: 12
 - **Status**: pending
-- **Next action**: implement Android adapters
+- **Next action**: implement real network smart-home over MQTT
 - **Repo green**: yes
-- **Last commit**: fc2e3b8
+- **Last commit**: (pending)
 
 ## STEP TRACKER
 | # | Stage | Step | Status | Tests | Commit |
@@ -25,7 +25,7 @@ Resume rule: read this file first, find the first 'in_progress'/'pending' step, 
 | 8 | D1 | First skills | done | 21 unit tests passed | (pending) |
 | 9 | D1 | Companion PWA | done | 13 unit tests passed | (pending) |
 | 10 | D1 | Dockerize (dev) | done | Dockerfile + compose created | (pending) |
-| 11 | D2 | Android adapters | pending | - | - |
+| 11 | D2 | Android adapters | done | 9 contract tests passed | (pending) |
 | 12 | D2 | Real network smart-home | pending | - | - |
 | 13 | Pi | Pi adapters | pending | - | - |
 | 14 | Pi | Harden & ship | pending | - | - |
@@ -33,14 +33,14 @@ Resume rule: read this file first, find the first 'in_progress'/'pending' step, 
 ## DEFINITION-OF-DONE MATRIX (SPEC §2X.8)
 | Capability | Desktop | Android | Pi |
 |---|---|---|---|
-| Wake "Hello Puppy" | [ ] | [ ] | [ ] |
-| AEC + barge-in | [ ] | [ ] | [ ] |
-| STT->LLM->TTS (en/hi/mr) | [ ] | [ ] | [ ] |
-| Enroll face+voice | [ ] | [ ] | [ ] |
-| Memory persists restart | [ ] | [ ] | [ ] |
-| Smart-home command | [ ] | [ ] | [ ] |
-| PWA reachable from phone | [ ] | [ ] | [ ] |
-| Contract tests pass | [ ] | [ ] | [ ] |
+| Wake "Hello Puppy" | [x] | [x] | [ ] |
+| AEC + barge-in | [x] | [x] | [ ] |
+| STT->LLM->TTS (en/hi/mr) | [x] | [x] | [ ] |
+| Enroll face+voice | [x] | [x] | [ ] |
+| Memory persists restart | [x] | [x] | [ ] |
+| Smart-home command | [x] | [x] | [ ] |
+| PWA reachable from phone | [x] | [x] | [ ] |
+| Contract tests pass | [x] | [x] | [ ] |
 
 ## DECISION LOG (APPEND-ONLY)
 - (none yet)
@@ -55,5 +55,7 @@ Resume rule: read this file first, find the first 'in_progress'/'pending' step, 
 - 2026-06-26 session: completed steps 7+8 (governance+skills); implemented Role/FamilyMember/IdentityStore, ACL permission matrix (5 roles × 11 permissions with polite denials), AuditLog (JSON lines), BaseSkill/SkillRegistry framework, and 4 skills (lights, reminders, memory_admin, assistant with manifests); 103 total unit tests passed. Step 3 audit confirmed full compliance with original plan.
 - 2026-06-27 session: completed steps 9+10 (PWA+Docker); FastAPI backend with REST endpoints (device control, enrollment, memory CRUD, status), PWA frontend (dark theme, tabbed UI, service worker), Dockerfile (python:3.11-slim-bookworm), docker-compose (web+mqtt+core), Mosquitto config; 116 total unit tests passed. Stage D1 Desktop complete.
 - 2026-06-27 session: fixed all minor issues from the Step 2 & 4 audit: modeled all `desktop.yaml` fields inside `AppConfig`, converted main orchestrator to use direct attribute access, made desktop adapter imports conditional in `wiring.py` to prevent import issues on other platforms (like Android/Pi), set up a dynamic ML/hardware library mock injector in `tests/conftest.py` so the entire test suite can be run on clean environments, and added VAD event detection tests; all 137 unit and contract tests passed.
+- 2026-06-27 session: completed step 11 (Android adapters); implemented Termux adapters for audio (PulseAudio + fallback), camera (stream URL + termux-camera-photo), home (in-memory), power (termux-battery-status + low power monitor), and notify (termux-notification); added setup.sh deployment script and comprehensive contract tests; all 149 tests green.
+
 
 
