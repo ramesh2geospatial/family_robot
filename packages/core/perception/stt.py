@@ -61,6 +61,34 @@ class SpeechToText:
 
             transcribed_text = " ".join(text_segments).strip()
             detected_language = info.language
+
+            # Guard: Only accept supported languages.  When Whisper detects
+            # an unexpected lang (e.g. 'nn' from mic echo or noise) with
+            # low confidence, fall back to English.
+            _SUPPORTED_LANGS = {"en", "hi", "mr"}
+            lang_prob = getattr(info, "language_probability", 1.0)
+            if not isinstance(lang_prob, (int, float)):
+                try:
+                    lang_prob = float(lang_prob)
+                except (TypeError, ValueError):
+                    lang_prob = 1.0
+
+            if detected_language not in _SUPPORTED_LANGS:
+                logger.warning(
+                    "Unsupported language '%s' (prob=%.2f) detected – "
+                    "falling back to 'en'.",
+                    detected_language,
+                    lang_prob,
+                )
+                detected_language = "en"
+            elif lang_prob < 0.4:
+                logger.warning(
+                    "Low language confidence for '%s' (prob=%.2f) – "
+                    "falling back to 'en'.",
+                    detected_language,
+                    lang_prob,
+                )
+                detected_language = "en"
         except Exception as e:
             logger.error("Error transcribing audio with Whisper: %s", e, exc_info=True)
             return "", ""

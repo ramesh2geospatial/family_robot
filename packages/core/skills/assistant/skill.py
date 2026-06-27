@@ -20,9 +20,14 @@ logger = logging.getLogger(__name__)
 
 _SYSTEM_PROMPT = (
     "You are FamilyRobot, a helpful family assistant for an 8-member Indian "
-    "household. Keep answers concise, warm, and family-friendly. "
-    "Answer in the language the user spoke."
+    "household. Keep answers concise, warm, and family-friendly."
 )
+
+# Explicit language constraints the local LLM (3B params) actually follows
+_LANG_INSTRUCTIONS = {
+    "hi": " Respond ONLY in Hindi (Devanagari script). Do NOT use English.",
+    "mr": " Respond ONLY in Marathi (Devanagari script). Do NOT use English.",
+}
 
 # ── Tuning constants ──
 _MAX_HISTORY_TURNS: int = 5  # turns (user+assistant pairs) retained
@@ -85,7 +90,12 @@ class AssistantSkill(BaseSkill):
         if not is_guest:
             long_term_context = await self._rag_lookup(ctx)
 
-        system_prompt = _SYSTEM_PROMPT + long_term_context
+        # Build explicit language instruction from detected spoken language
+        lang_code = getattr(ctx, "language", "en") or "en"
+        lang_instruction = _LANG_INSTRUCTIONS.get(
+            lang_code, " Respond ONLY in English."
+        )
+        system_prompt = _SYSTEM_PROMPT + lang_instruction + long_term_context
 
         # 2. Short-Term Conversation History
         user_id = ctx.user_id or "unknown"

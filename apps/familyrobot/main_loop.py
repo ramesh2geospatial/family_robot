@@ -387,10 +387,23 @@ async def _handle_intent(
 
 
 async def _speak(tts, audio, text: str) -> None:
-    """Synthesise and play *text*."""
+    """Synthesise and play *text*, then suppress echo.
+
+    After playback finishes we wait briefly for any acoustic echo
+    (robot's own voice picked up by the mic) to fill the input buffer,
+    then flush all accumulated audio so the wake-word detector does not
+    falsely trigger on the TTS output.
+    """
     try:
         pcm, sr = await tts.synthesize(text)
         await audio.play(pcm, sr)
     except Exception as exc:
         logger.error("TTS/play failed: %s", exc)
+    finally:
+        # Post-speech echo suppression: let echo dissipate, then discard
+        await asyncio.sleep(1.0)
+        try:
+            await audio.flush()
+        except Exception:
+            pass
 
