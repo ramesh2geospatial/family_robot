@@ -6,9 +6,13 @@ from packages.core.skills.ac.skill import AcSkill
 from packages.core.skills.assistant.skill import AssistantSkill
 from packages.core.skills.base import BaseSkill, SkillContext, SkillResult
 from packages.core.skills.calls.skill import CallsSkill
+from packages.core.skills.cooking.skill import CookingSkill
+from packages.core.skills.fan.skill import FanSkill
 from packages.core.skills.geyser.skill import GeyserSkill
+from packages.core.skills.homework.skill import HomeworkSkill
 from packages.core.skills.lights.skill import LightsSkill
 from packages.core.skills.memory_admin.skill import MemoryAdminSkill
+from packages.core.skills.music.skill import MusicSkill
 from packages.core.skills.pump.skill import PumpSkill
 from packages.core.skills.registry import SkillRegistry
 from packages.core.skills.reminders.skill import RemindersSkill
@@ -31,6 +35,10 @@ __all__ = [
     "PumpSkill",
     "WasherSkill",
     "TvSkill",
+    "FanSkill",
+    "MusicSkill",
+    "CookingSkill",
+    "HomeworkSkill",
     "SkillContext",
     "SkillRegistry",
     "SkillResult",

@@ -1,0 +1,15 @@
+name: fan
+languages: [en, hi, mr]
+intents:
+  - id: fan.control
+    utterances:
+      en: ["turn on the fan", "turn off the fan", "set fan speed to {speed}"]
+      hi: ["fan chalu karo", "fan band karo", "fan speed {speed} karo"]
+      mr: ["fan chalu kar", "fan band kar", "fan cha speed {speed} kar"]
+    slots:
+      action: {type: action, required: false}
+      speed: {type: number, required: false}
+required_permissions: [control_fan]
+hardware_deps: [home]
+offline_capable: true
+entry_points: {execute: "skill:execute"}

@@ -1,0 +1,29 @@
+name: homework
+languages: [en, hi, mr]
+intents:
+  - id: homework.explain
+    utterances:
+      en: ["explain {concept} for grade {grade}", "what is {concept} for grade {grade}", "explain {concept} grade {grade}"]
+      hi: ["{concept} grade {grade} ke liye samjhao", "gravity kya hai grade {grade} ke liye"]
+      mr: ["{concept} grade {grade} sathi sang", "gravity mhanje kay grade {grade} sathi"]
+    slots:
+      concept: {type: text, required: true}
+      grade: {type: number, required: false}
+  - id: homework.solve
+    utterances:
+      en: ["solve math problem {problem}", "solve {problem}", "how to solve {problem}"]
+      hi: ["maths problem {problem} solve karo", "{problem} kaise solve karein"]
+      mr: ["ganit {problem} solve kar", "{problem} kase sodvayche"]
+    slots:
+      problem: {type: text, required: true}
+  - id: homework.quiz
+    utterances:
+      en: ["quiz me on {topic}", "start a quiz on {topic}", "give me a question about {topic}"]
+      hi: ["mujhe {topic} par question pucho", "{topic} ka quiz chalu karo"]
+      mr: ["mala {topic} var prashna vichar", "{topic} var quiz suru kar"]
+    slots:
+      topic: {type: text, required: true}
+required_permissions: [general_info]
+hardware_deps: []
+offline_capable: false
+entry_points: {execute: "skill:execute"}

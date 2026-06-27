@@ -95,6 +95,9 @@ _REMINDER_KEYWORDS = [
 _CALLS_KEYWORDS = ["call ", "phone ", "dial "]
 _SECURITY_KEYWORDS = ["security check", "check security", "anyone outside"]
 _SENSORS_KEYWORDS = ["sensor status", "door status", "doors locked"]
+_MUSIC_KEYWORDS = ["play ", "pause music", "stop music", "next song", "music", "gana"]
+_COOKING_KEYWORDS = ["recipe", "cook", "convert", "step", "pudhchi", "pudhe"]
+_HOMEWORK_KEYWORDS = ["explain", "solve", "quiz", "question about"]
 
 _DEVICE_NAMES = [
     "geyser",
@@ -146,8 +149,6 @@ def _extract_duration(text: str) -> Optional[dict]:
     return None
 
 
-
-
 def _extract_temp(text: str) -> Optional[int]:
     """Extract temperature value near AC commands."""
     match = re.search(r"(?:to|at|temp|temperature)\s*(\d{2})", text, re.IGNORECASE)
@@ -170,6 +171,57 @@ def _extract_source(text: str) -> Optional[str]:
     match = re.search(r"source\s+(?:on\s+tv\s+)?(?:to\s+)?(\w+)", text, re.IGNORECASE)
     if match:
         return match.group(1)
+    return None
+
+
+def _extract_cooking_convert(text: str) -> Optional[dict]:
+    """Extract amount, unit, and target unit for cooking conversions."""
+    match = re.search(
+        r"convert\s+(\d+(?:\.\d+)?)\s*(\w+)\s+to\s+(\w+)", text, re.IGNORECASE
+    )
+    if match:
+        return {
+            "amount": match.group(1),
+            "unit": match.group(2),
+            "target_unit": match.group(3),
+        }
+    return None
+
+
+def _extract_cooking_recipe(text: str) -> Optional[str]:
+    """Extract recipe name from cooking queries."""
+    match = re.search(
+        r"(?:cook|recipe for|recipe|start recipe)\s+(.+)", text, re.IGNORECASE
+    )
+    if match:
+        return match.group(1).strip().rstrip("?.!")
+    return None
+
+
+def _extract_homework_explain(text: str) -> Optional[dict]:
+    """Extract concept and grade from homework explanation requests."""
+    match = re.search(r"explain\s+(.+?)\s+for\s+grade\s+(\d+)", text, re.IGNORECASE)
+    if match:
+        return {"concept": match.group(1).strip(), "grade": match.group(2)}
+    match = re.search(r"explain\s+(.+)", text, re.IGNORECASE)
+    if match:
+        return {"concept": match.group(1).strip(), "grade": "5"}
+    return None
+
+
+def _extract_homework_solve(text: str) -> Optional[str]:
+    """Extract the math problem string to solve."""
+    match = re.search(r"(?:solve|solve math problem)\s+(.+)", text, re.IGNORECASE)
+    if match:
+        return match.group(1).strip()
+    return None
+
+
+def _extract_homework_quiz(text: str) -> Optional[str]:
+    """Extract topic name for quizzes."""
+    match = re.search(r"quiz\s+(?:me\s+)?(?:on|about)\s+(.+)", text, re.IGNORECASE)
+    if match:
+        return match.group(1).strip().rstrip("?.!")
     return None
 
 
@@ -222,6 +274,67 @@ class IntentRouter:
             if kw in lower:
                 return Intent(name="reminder", confidence=0.85, entities={})
 
+        for kw in _MUSIC_KEYWORDS:
+            if kw in lower:
+                action = "play"
+                song = ""
+                if "pause" in lower:
+                    action = "pause"
+                elif "stop" in lower:
+                    action = "stop"
+                elif "next" in lower:
+                    action = "next"
+                elif lower.startswith("play "):
+                    song = text[5:].strip().rstrip("?.!")
+                return Intent(
+                    name="play_music",
+                    confidence=0.9,
+                    entities={"action": action, "song": song},
+                )
+
+        for kw in _COOKING_KEYWORDS:
+            if kw in lower:
+                if "next step" in lower or "next" in lower:
+                    return Intent(
+                        name="cooking",
+                        confidence=0.9,
+                        entities={"intent_id": "cooking.next"},
+                    )
+                conv = _extract_cooking_convert(text)
+                if conv:
+                    conv["intent_id"] = "cooking.convert"
+                    return Intent(name="cooking", confidence=0.9, entities=conv)
+                rec = _extract_cooking_recipe(text)
+                if rec:
+                    return Intent(
+                        name="cooking",
+                        confidence=0.9,
+                        entities={"intent_id": "cooking.recipe", "recipe": rec},
+                    )
+
+        for kw in _HOMEWORK_KEYWORDS:
+            if kw in lower:
+                if "quiz" in lower:
+                    topic = _extract_homework_quiz(text)
+                    if topic:
+                        return Intent(
+                            name="homework",
+                            confidence=0.9,
+                            entities={"intent_id": "homework.quiz", "topic": topic},
+                        )
+                if "solve" in lower:
+                    prob = _extract_homework_solve(text)
+                    if prob:
+                        return Intent(
+                            name="homework",
+                            confidence=0.9,
+                            entities={"intent_id": "homework.solve", "problem": prob},
+                        )
+                exp = _extract_homework_explain(text)
+                if exp:
+                    exp["intent_id"] = "homework.explain"
+                    return Intent(name="homework", confidence=0.9, entities=exp)
+
         for kw in _HOME_KEYWORDS:
             if kw in lower:
                 devices = _extract_devices(text)
@@ -231,6 +344,12 @@ class IntentRouter:
                     entities["action"] = "on" if on_off else "off"
 
                 # Check for specific appliances to route to dedicated skills
+                if len(devices) > 1:
+                    entities["devices"] = devices
+                    return Intent(
+                        name="home_control", confidence=0.9, entities=entities
+                    )
+
                 if "ac" in devices:
                     entities["temp"] = _extract_temp(text)
                     entities["mode"] = _extract_mode(text)
@@ -245,13 +364,29 @@ class IntentRouter:
                     return Intent(name="control_tv", confidence=0.9, entities=entities)
 
                 if "geyser" in devices or "heater" in devices:
-                    return Intent(name="control_geyser", confidence=0.9, entities=entities)
+                    return Intent(
+                        name="control_geyser", confidence=0.9, entities=entities
+                    )
 
                 if "pump" in devices:
-                    return Intent(name="control_pump", confidence=0.9, entities=entities)
+                    return Intent(
+                        name="control_pump", confidence=0.9, entities=entities
+                    )
 
                 if "washer" in devices or "washing machine" in devices:
-                    return Intent(name="control_washer", confidence=0.9, entities=entities)
+                    return Intent(
+                        name="control_washer", confidence=0.9, entities=entities
+                    )
+
+                if "fan" in devices:
+                    speed = None
+                    speed_match = re.search(
+                        r"(?:speed\s+)?([1-5])", text, re.IGNORECASE
+                    )
+                    if speed_match and "fan" in lower:
+                        speed = int(speed_match.group(1))
+                    entities["speed"] = speed
+                    return Intent(name="control_fan", confidence=0.9, entities=entities)
 
                 if devices:
                     entities["devices"] = devices
@@ -285,8 +420,9 @@ class IntentRouter:
         system = (
             "You are an intent classifier. Classify the user message into exactly "
             "one of: home_control, control_ac, control_tv, control_geyser, control_pump, "
-            "control_washer, memory_store, memory_recall, timer, reminder, "
-            "calls, security, sensors, general_chat. Respond with ONLY the intent name, nothing else."
+            "control_washer, control_fan, play_music, cooking, homework, memory_store, "
+            "memory_recall, timer, reminder, calls, security, sensors, general_chat. "
+            "Respond with ONLY the intent name, nothing else."
         )
         result = await self._llm.generate(  # type: ignore[union-attr]
             text, system=system, max_tokens=20, temperature=0.1
@@ -299,6 +435,10 @@ class IntentRouter:
             "control_geyser",
             "control_pump",
             "control_washer",
+            "control_fan",
+            "play_music",
+            "cooking",
+            "homework",
             "memory_store",
             "memory_recall",
             "timer",

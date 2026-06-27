@@ -1,0 +1,15 @@
+name: music
+languages: [en, hi, mr]
+intents:
+  - id: music.control
+    utterances:
+      en: ["play {song}", "pause music", "stop music", "next song"]
+      hi: ["gana bajao {song}", "music roko", "gana band karo", "agla gana"]
+      mr: [" गाणे लाव {song}", "गाणे थांबव", "पुढचे गाणे"]
+    slots:
+      action: {type: action, required: false}
+      song: {type: text, required: false}
+required_permissions: [play_music]
+hardware_deps: []
+offline_capable: true
+entry_points: {execute: "skill:execute"}

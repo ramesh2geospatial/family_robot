@@ -1,0 +1,29 @@
+name: cooking
+languages: [en, hi, mr]
+intents:
+  - id: cooking.recipe
+    utterances:
+      en: ["how do I cook {recipe}", "recipe for {recipe}", "start recipe {recipe}"]
+      hi: ["{recipe} ki recipe batao", "{recipe} kaise banate hain"]
+      mr: ["{recipe} chi recipe sang", "{recipe} kashi banvaychi"]
+    slots:
+      recipe: {type: text, required: true}
+  - id: cooking.next
+    utterances:
+      en: ["next step", "what is the next step", "go to next step"]
+      hi: ["agla step batao", "aage bolo"]
+      mr: ["pudhchi पायरी sang", "pudhe kay"]
+    slots: {}
+  - id: cooking.convert
+    utterances:
+      en: ["convert {amount} {unit} to {target_unit}", "how many {target_unit} is {amount} {unit}"]
+      hi: ["{amount} {unit} kitne {target_unit} hota hai"]
+      mr: ["{amount} {unit} mhanje kiti {target_unit}"]
+    slots:
+      amount: {type: number, required: true}
+      unit: {type: text, required: true}
+      target_unit: {type: text, required: true}
+required_permissions: [general_info]
+hardware_deps: []
+offline_capable: true
+entry_points: {execute: "skill:execute"}

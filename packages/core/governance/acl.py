@@ -151,8 +151,13 @@ class ACL:
             "control_geyser",
             "control_pump",
             "control_washer",
+            "control_fan",
+            "play_music",
         ):
             return self.check_permission(user, intent_name)
+
+        if intent_name in ("cooking", "homework"):
+            return self.check_permission(user, "general_info")
 
         if intent_name in ("make_calls", "calls"):
             return self.check_permission(user, "make_calls")
