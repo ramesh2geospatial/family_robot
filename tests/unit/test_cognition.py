@@ -143,20 +143,20 @@ class TestLlamaLLMClient:
     async def test_generate_with_mock(self) -> None:
         client = LlamaLLMClient(model_path="fake.gguf")
         mock_llama = MagicMock()
-        mock_llama.create_completion.return_value = {
-            "choices": [{"text": " Sure, here is the answer."}]
+        mock_llama.create_chat_completion.return_value = {
+            "choices": [{"message": {"content": " Sure, here is the answer."}}]
         }
         client._llama = mock_llama  # skip loading
 
         result = await client.generate("What is 2+2?")
         assert "answer" in result.lower()
-        mock_llama.create_completion.assert_called_once()
+        mock_llama.create_chat_completion.assert_called_once()
 
     @pytest.mark.asyncio
     async def test_generate_error_returns_fallback(self) -> None:
         client = LlamaLLMClient(model_path="fake.gguf")
         mock_llama = MagicMock()
-        mock_llama.create_completion.side_effect = RuntimeError("OOM")
+        mock_llama.create_chat_completion.side_effect = RuntimeError("OOM")
         client._llama = mock_llama
 
         result = await client.generate("test")
