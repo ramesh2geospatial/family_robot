@@ -34,7 +34,7 @@ Resume rule: read this file first, find the first 'in_progress'/'pending' step, 
 | 17 | Phase 2 | Missing Phase 2 dance skill & webapp audit logging | done | 22 new/updated unit tests passed | 7a8ad93 |
 | 18 | Phase 1 | Missing Phase 1 enroll skill | done | 2 new/updated unit tests passed | 4efcd04 |
 | 19 | UX | Music playback: yt-dlp + mpv + song extraction | done | 15 new/updated tests passed (228 total) | 6cf9c2e |
-| 20 | UX | Multilingual conversation consistency & barge-in | done | 3 new unit tests passed (231 total) | pending |
+| 20 | UX | Multilingual conversation consistency & barge-in | done | 3 new unit tests passed (231 total) | 8ae7234 |
 
 ## DEFINITION-OF-DONE MATRIX (SPEC §2X.8)
 | Capability | Desktop | Android | Pi |
