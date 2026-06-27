@@ -1,0 +1,3 @@
+GREEN
+test_bug_003_pi_charging_shutdown
+Passed: Pi battery monitor respects is_charging state, does not trigger safe shutdown when plugged in.

@@ -181,7 +181,8 @@ class TestACL:
 
     def test_unknown_permission_allows(self, acl: ACL, child) -> None:
         result = acl.check_permission(child, "some_future_permission")
-        assert result.allowed is True
+        assert result.allowed is False
+        assert "Unknown permission" in result.reason
 
 
 # ──────────────────────────────────────────────

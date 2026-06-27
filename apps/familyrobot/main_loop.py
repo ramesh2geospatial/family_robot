@@ -11,6 +11,7 @@ import logging
 import time
 
 from packages.core.expression.response_formatter import format_response
+from packages.core.governance import ACL, IdentityStore, AuditLog, UNKNOWN_USER
 
 logger = logging.getLogger(__name__)
 
@@ -53,13 +54,16 @@ async def run_loop(
     logger.info("FamilyRobot loop started. Listening for wake word…")
 
     conversation_logger = components.get("conversation_logger")
+    acl = components.get("acl", ACL())
+    identity_store = components.get("identity_store", IdentityStore())
+    audit_log = components.get("audit_log", AuditLog(log_path="data/audit.jsonl"))
 
     try:
         while not shutdown_event.is_set():
             await _listen_cycle(
                 audio, home, llm, memory, tts,
                 wakeword, vad, stt, intent_router,
-                conversation_logger,
+                conversation_logger, acl, identity_store, audit_log,
                 shutdown_event,
             )
     except asyncio.CancelledError:
@@ -75,7 +79,7 @@ async def run_loop(
 async def _listen_cycle(
     audio, home, llm, memory, tts,
     wakeword, vad, stt, intent_router,
-    conversation_logger,
+    conversation_logger, acl, identity_store, audit_log,
     shutdown_event: asyncio.Event,
 ) -> None:
     """One wake-listen-respond cycle."""
@@ -146,13 +150,38 @@ async def _listen_cycle(
 
     logger.info("Transcribed: '%s' [%s]", text, lang)
 
+    # Identify user (support prefix override, e.g. "Ramesh: turn on geyser")
+    user = UNKNOWN_USER
+    clean_text = text
+    if ":" in text:
+        parts = text.split(":", 1)
+        prefix = parts[0].strip()
+        for member in identity_store.list_members():
+            if member.name.lower() == prefix.lower():
+                user = member
+                clean_text = parts[1].strip()
+                break
+
     # 4-7. Intent → action → format → speak
     try:
-        intent = await intent_router.classify(text)
+        intent = await intent_router.classify(clean_text)
         logger.info("Intent: %s (%.2f) entities=%s", intent.name, intent.confidence, intent.entities)
 
-        raw_response = await _handle_intent(intent, text, home, llm, memory)
-        response = format_response(raw_response, intent.name)
+        # Enforce ACL Check
+        acl_result = acl.check_intent(user, intent.name, intent.entities)
+        audit_log.record(
+            event="acl_check",
+            user_id=user.user_id,
+            user_role=user.role.value,
+            details={"intent": intent.name, "entities": intent.entities},
+            allowed=acl_result.allowed,
+        )
+
+        if not acl_result.allowed:
+            response = acl_result.spoken_denial
+        else:
+            raw_response = await _handle_intent(intent, clean_text, home, llm, memory)
+            response = format_response(raw_response, intent.name)
     except Exception as exc:
         logger.error("Processing failed: %s", exc, exc_info=True)
         response = _FALLBACK_MSG

@@ -101,9 +101,13 @@ class ACL:
         allowed_roles = _PERMISSION_MATRIX.get(permission)
 
         if allowed_roles is None:
-            # Unknown permission → allow by default (fail-open for unknown skills)
-            logger.warning("Unknown permission '%s'; allowing by default.", permission)
-            return ACLResult(allowed=True)
+            # Unknown permission → reject (fail-closed for security)
+            logger.warning("Unknown permission '%s'; denying access.", permission)
+            return ACLResult(
+                allowed=False,
+                reason=f"Unknown permission '{permission}'",
+                spoken_denial="Sorry, I don't recognize that permission.",
+            )
 
         if user.role in allowed_roles:
             logger.debug(

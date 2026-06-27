@@ -64,6 +64,27 @@ class PiPowerAdapter(PowerPort):
             logger.debug(f"Pi I2C SMBus query failed: {e}")
             return 100
 
+    async def is_charging(self) -> bool:
+        """Return True if the UPS is currently charging (current > 0) or fallback to False."""
+        lib = self._smbus
+        if lib is None:
+            return False
+        try:
+            bus = lib.SMBus(1)
+            for addr in [0x42, 0x43]:
+                try:
+                    # Current register on Waveshare UPS (two's complement)
+                    current = bus.read_word_data(addr, 0x04)
+                    if isinstance(current, int):
+                        if current > 32767:
+                            current -= 65536
+                        return current > 0
+                except Exception:
+                    pass
+            return False
+        except Exception:
+            return False
+
     async def on_low_power(self, cb: Callable[[], Any]) -> None:
         """Register a callback to run when battery levels run low (< 15%)."""
         self._callback = cb
@@ -77,9 +98,10 @@ class PiPowerAdapter(PowerPort):
             if self._callback:
                 try:
                     pct = await self.battery_pct()
-                    if pct is not None and pct < 15:
+                    charging = await self.is_charging()
+                    if pct is not None and pct < 15 and not charging:
                         logger.warning(
-                            f"Pi battery low ({pct}%). Executing low power callback."
+                            f"Pi battery low ({pct}%) and discharging. Executing low power callback."
                         )
                         if asyncio.iscoroutinefunction(self._callback):
                             await self._callback()

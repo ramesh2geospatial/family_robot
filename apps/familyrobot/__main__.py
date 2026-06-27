@@ -19,7 +19,7 @@ from apps.familyrobot.wiring import wire_components
 from packages.core.cognition import IntentRouter, LlamaLLMClient
 from packages.core.config import AppConfig, load_config
 from packages.core.expression import PiperTTSEngine
-from packages.core.governance import ConversationLogger
+from packages.core.governance import ConversationLogger, ACL, IdentityStore, AuditLog, FamilyMember, Role
 from packages.core.memory import MemoryStore
 from packages.core.perception import SpeechToText, VoiceActivityDetector, WakeWordDetector
 
@@ -65,6 +65,13 @@ def _build_components(config: AppConfig) -> dict:
     conversation_logger = ConversationLogger(
         log_path=config.conversation_log_path,
     )
+    acl = ACL()
+    identity_store = IdentityStore()
+    audit_log = AuditLog(log_path="data/audit.jsonl")
+
+    # Enroll default mock users for ACL verification
+    identity_store.enroll(FamilyMember(user_id="parent_default", name="Ramesh", role=Role.PARENT))
+    identity_store.enroll(FamilyMember(user_id="child_default", name="Arjun", role=Role.CHILD))
 
     return {
         "audio": wired.audio,
@@ -81,6 +88,9 @@ def _build_components(config: AppConfig) -> dict:
         "intent_router": intent_router,
         "tts": tts,
         "conversation_logger": conversation_logger,
+        "acl": acl,
+        "identity_store": identity_store,
+        "audit_log": audit_log,
     }
 
 

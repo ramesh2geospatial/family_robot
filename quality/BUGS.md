@@ -11,6 +11,7 @@ This document records the confirmed defects identified in Phase 3 code review.
 - Description: The orchestrator main loop classifies voice commands but routes them directly to state modifiers without calling the ACL access check.
 - Expected behavior: Every privileged intent must invoke `acl.check_intent(user, intent.name, intent.entities)` and speak a polite denial if rejected.
 - Actual behavior: Commands are executed directly for any voice input.
+- Status: Fixed (fix patch and TDD log verified)
 
 ### BUG-002: FastAPI Webapp Command Bypasses ACL Check
 - Primary requirement: REQ-002
@@ -21,6 +22,7 @@ This document records the confirmed defects identified in Phase 3 code review.
 - Description: Web companion endpoints dispatch device control switch changes to the hardware adapters directly, bypassing the security policy matrix.
 - Expected behavior: REST request payloads must be checked against user roles before toggling devices.
 - Actual behavior: REST API requests execute switches unconditionally.
+- Status: Fixed (fix patch and TDD log verified)
 
 ### BUG-003: Pi Power Monitor Safe Shutdown Loops While Charging
 - Primary requirement: REQ-005
@@ -30,6 +32,7 @@ This document records the confirmed defects identified in Phase 3 code review.
 - Description: The Pi battery monitor loop checks percentage but does not verify charging status, triggering safe shutdown loops on power cuts recovery.
 - Expected behavior: Callback triggers only when battery is low and discharging.
 - Actual behavior: Callback triggers on any low battery level.
+- Status: Fixed (fix patch and TDD log verified)
 
 ### BUG-004: Fail-Open Policy for Unregistered Permissions
 - Primary requirement: REQ-003
@@ -38,3 +41,4 @@ This document records the confirmed defects identified in Phase 3 code review.
 - Description: ACL returns `allowed=True` if a permission is not defined in the matrix.
 - Expected behavior: Unrecognized permissions must fail closed and return `allowed=False`.
 - Actual behavior: Misspelled permissions fail open.
+- Status: Fixed (fix patch and TDD log verified)

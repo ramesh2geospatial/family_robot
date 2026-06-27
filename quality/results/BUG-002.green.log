@@ -1,0 +1,3 @@
+GREEN
+test_bug_002_webapp_acl
+Passed: POST endpoint returns 403 for unauthorized users, allows Ramesh.

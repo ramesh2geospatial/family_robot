@@ -46,15 +46,15 @@ With docs: yes
 ## Cumulative BUG tracker
 | # | Source | File:Line | Description | Severity | Closure Status | Test/Exemption |
 |---|--------|-----------|-------------|----------|----------------|----------------|
-| BUG-001 | Code Review | apps/familyrobot/main_loop.py:150 | Main Loop bypasses ACL checks | CRITICAL | open | test_regression.py |
-| BUG-002 | Code Review | packages/core/webapp/app.py:157 | Webapp bypasses ACL checks | CRITICAL | open | test_regression.py |
-| BUG-003 | Code Review | packages/adapters/raspberrypi/power.py:73 | Pi safe shutdown charging loops | MAJOR | open | test_regression.py |
-| BUG-004 | Code Review | packages/core/governance/acl.py:101 | Fail-open on unknown permissions | CRITICAL | open | test_regression.py |
+| BUG-001 | Code Review | apps/familyrobot/main_loop.py:150 | Main Loop bypasses ACL checks | CRITICAL | fixed | test_regression.py |
+| BUG-002 | Code Review | packages/core/webapp/app.py:157 | Webapp bypasses ACL checks | CRITICAL | fixed | test_regression.py |
+| BUG-003 | Code Review | packages/adapters/raspberrypi/power.py:73 | Pi safe shutdown charging loops | MAJOR | fixed | test_regression.py |
+| BUG-004 | Code Review | packages/core/governance/acl.py:101 | Fail-open on unknown permissions | CRITICAL | fixed | test_regression.py |
 
 ## Terminal Gate Verification
 - **File checks**: PASS (BUGS.md, REQUIREMENTS.md, QUALITY.md, etc. all exist)
-- **TDD verification**: PASS (tdd-results.json exists with 4 bugs)
-- **Integration verification**: PASS (integration-results.json exists with FIX BEFORE MERGE recommendation)
+- **TDD verification**: PASS (tdd-results.json exists with 4 bugs verified)
+- **Integration verification**: PASS (integration-results.json exists with SHIP recommendation)
 - **Gate result**: PASS (0 FAIL, 0 WARN)
 
 ## Exploration summary

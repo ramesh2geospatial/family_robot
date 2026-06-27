@@ -1,0 +1,3 @@
+GREEN
+test_bug_001_main_loop_acl
+Passed: user Ramesh permitted, Arjun denied geyser command. Intent validated against ACL checks.

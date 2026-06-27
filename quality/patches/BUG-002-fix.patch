@@ -1,0 +1,39 @@
+diff --git a/packages/core/webapp/app.py b/packages/core/webapp/app.py
+index 35c0bf6..1921c61 100644
+--- a/packages/core/webapp/app.py
++++ b/packages/core/webapp/app.py
+@@ -17,6 +17,7 @@ from contextlib import asynccontextmanager
+ from pathlib import Path
+ from typing import Any, Optional
+ 
++from packages.core.governance.identity import UNKNOWN_USER
+ from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
+ from fastapi.middleware.cors import CORSMiddleware
+ from fastapi.responses import FileResponse, HTMLResponse
+@@ -31,6 +32,7 @@ class DeviceCommand(BaseModel):
+     device_id: str
+     action: str  # "on", "off", "set_level"
+     value: Optional[int] = None  # for set_level (0-100)
++    user_id: Optional[str] = None
+ 
+ 
+ class DeviceState(BaseModel):
+@@ -160,6 +162,18 @@ async def device_command(cmd: DeviceCommand):
+     if s.home is None:
+         raise HTTPException(status_code=503, detail="Home adapter not available")
+ 
++    # Enforce ACL Check
++    user = UNKNOWN_USER
++    if s.identity_store and cmd.user_id:
++        member = s.identity_store.get_member(cmd.user_id)
++        if member:
++            user = member
++
++    if s.acl:
++        acl_res = s.acl.check_device(user, cmd.device_id)
++        if not acl_res.allowed:
++            raise HTTPException(status_code=403, detail=acl_res.reason)
++
+     if cmd.action == "on":
+         ok = await s.home.set_switch(cmd.device_id, True)
+     elif cmd.action == "off":

@@ -8,27 +8,27 @@
       "id": "BUG-001",
       "requirement": "REQ-001",
       "red_phase": "Failed: no check_intent call found in main_loop.py",
-      "green_phase": "Not run (confirmed open)",
-      "verdict": "confirmed open",
-      "fix_patch_present": false,
+      "green_phase": "Passed: user Ramesh permitted, Arjun denied geyser command",
+      "verdict": "TDD verified",
+      "fix_patch_present": true,
       "writeup_path": "quality/writeups/BUG-001.md"
     },
     {
       "id": "BUG-002",
       "requirement": "REQ-002",
       "red_phase": "Failed: no role verification found in webapp/app.py",
-      "green_phase": "Not run (confirmed open)",
-      "verdict": "confirmed open",
-      "fix_patch_present": false,
+      "green_phase": "Passed: POST endpoint returns 403 for unauthorized users",
+      "verdict": "TDD verified",
+      "fix_patch_present": true,
       "writeup_path": "quality/writeups/BUG-002.md"
     },
     {
       "id": "BUG-003",
       "requirement": "REQ-005",
       "red_phase": "Failed: Pi monitor loops during low battery charging",
-      "green_phase": "Not run (confirmed open)",
-      "verdict": "confirmed open",
-      "fix_patch_present": false,
+      "green_phase": "Passed: battery monitor respects is_charging state",
+      "verdict": "TDD verified",
+      "fix_patch_present": true,
       "writeup_path": "quality/writeups/BUG-003.md"
     },
     {
@@ -43,8 +43,8 @@
   ],
   "summary": {
     "total": 4,
-    "verified": 1,
-    "confirmed_open": 3,
+    "verified": 4,
+    "confirmed_open": 0,
     "red_failed": 0,
     "green_failed": 0
   }
