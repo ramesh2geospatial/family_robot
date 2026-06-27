@@ -1,4 +1,6 @@
 import logging
+import urllib.parse
+import webbrowser
 
 from packages.core.skills.base import BaseSkill, SkillContext, SkillResult
 
@@ -24,6 +26,13 @@ class MusicSkill(BaseSkill):
 
         if song:
             logger.info(f"[MusicPlayer] Playing song: {song}")
+            try:
+                query = urllib.parse.quote(f"{song} song")
+                url = f"https://www.youtube.com/results?search_query={query}"
+                webbrowser.open(url)
+            except Exception as e:
+                logger.error(f"Failed to open browser for song: {e}")
+
             return SkillResult(
                 spoken_response=f"Playing {song}.",
                 success=True,
@@ -32,6 +41,13 @@ class MusicSkill(BaseSkill):
 
         if action == "play":
             logger.info("[MusicPlayer] Playing default/generic music.")
+            try:
+                webbrowser.open(
+                    "https://www.youtube.com/results?search_query=trending+music"
+                )
+            except Exception as e:
+                logger.error(f"Failed to open browser for generic music: {e}")
+
             return SkillResult(
                 spoken_response="Playing some music.",
                 success=True,
