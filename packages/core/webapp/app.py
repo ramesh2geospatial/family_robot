@@ -80,6 +80,7 @@ class AppState:
         self.acl: Any = None
         self.config: Any = None
         self.skill_registry: Any = None
+        self.audit_log: Any = None
 
 
 _state = AppState()
@@ -97,6 +98,7 @@ def set_state(
     acl: Any = None,
     config: Any = None,
     skill_registry: Any = None,
+    audit_log: Any = None,
 ) -> None:
     if home is not None:
         _state.home = home
@@ -110,6 +112,8 @@ def set_state(
         _state.config = config
     if skill_registry is not None:
         _state.skill_registry = skill_registry
+    if audit_log is not None:
+        _state.audit_log = audit_log
 
 
 # ── FastAPI app ──────────────────────────────────────────────────
@@ -118,6 +122,42 @@ def set_state(
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info("FamilyRobot PWA starting up")
+
+    # If running standalone (e.g. via uvicorn in container), auto-wire adapters
+    s = get_state()
+    if s.home is None:
+        logger.info("Standalone mode detected. Initializing webapp components...")
+        import os
+
+        from apps.familyrobot.wiring import wire_components
+        from packages.core.config import load_config
+        from packages.core.governance import (
+            ACL,
+            AuditLog,
+            FamilyMember,
+            IdentityStore,
+            Role,
+        )
+        from packages.core.memory import MemoryStore
+
+        platform = os.environ.get("FAMILYROBOT_PLATFORM", "desktop")
+        config = load_config(platform=platform)
+
+        s.config = config
+        s.home = wire_components(config).home
+        s.memory = MemoryStore(db_path=config.memory_db_path)
+        s.identity_store = IdentityStore()
+        s.acl = ACL()
+        s.audit_log = AuditLog(log_path="data/audit.jsonl")
+
+        # Enroll default mock users
+        s.identity_store.enroll(
+            FamilyMember(user_id="parent_default", name="Ramesh", role=Role.PARENT)
+        )
+        s.identity_store.enroll(
+            FamilyMember(user_id="child_default", name="Arjun", role=Role.CHILD)
+        )
+
     yield
     logger.info("FamilyRobot PWA shutting down")
 
@@ -176,6 +216,14 @@ async def device_command(cmd: DeviceCommand):
 
     if s.acl:
         acl_res = s.acl.check_device(user, cmd.device_id)
+        if s.audit_log:
+            s.audit_log.record(
+                event="webapp_acl_check",
+                user_id=user.user_id,
+                user_role=user.role.value,
+                details={"device_id": cmd.device_id, "action": cmd.action},
+                allowed=acl_res.allowed,
+            )
         if not acl_res.allowed:
             raise HTTPException(status_code=403, detail=acl_res.reason)
 
@@ -190,6 +238,19 @@ async def device_command(cmd: DeviceCommand):
 
     if not ok:
         raise HTTPException(status_code=500, detail="Command failed")
+
+    if s.audit_log:
+        s.audit_log.record(
+            event="webapp_device_command",
+            user_id=user.user_id,
+            user_role=user.role.value,
+            details={
+                "device_id": cmd.device_id,
+                "action": cmd.action,
+                "value": cmd.value,
+            },
+            allowed=True,
+        )
 
     state = await s.home.get_state(cmd.device_id)
     return DeviceState(device_id=cmd.device_id, state=state)
@@ -234,6 +295,16 @@ async def enroll_member(req: EnrollRequest):
         language=req.language,
     )
     s.identity_store.enroll(member)
+
+    if s.audit_log:
+        s.audit_log.record(
+            event="webapp_enroll",
+            user_id="admin",
+            user_role="parent",
+            details={"user_id": member.user_id, "name": member.name, "role": req.role},
+            allowed=True,
+        )
+
     return {"user_id": member.user_id, "name": member.name, "role": member.role.value}
 
 
@@ -265,6 +336,16 @@ async def search_memory(req: MemorySearchRequest):
     if s.memory is None:
         raise HTTPException(status_code=503, detail="Memory store not available")
     hits = await s.memory.search(req.query, k=req.k)
+
+    if s.audit_log:
+        s.audit_log.record(
+            event="webapp_memory_search",
+            user_id="unknown",
+            user_role="guest",
+            details={"query": req.query, "k": req.k, "results_count": len(hits)},
+            allowed=True,
+        )
+
     return {"results": hits}
 
 
@@ -278,6 +359,16 @@ async def store_memory(body: dict):
         raise HTTPException(status_code=400, detail="Text is required")
     meta = body.get("meta", {})
     mem_id = await s.memory.store(text, meta=meta)
+
+    if s.audit_log:
+        s.audit_log.record(
+            event="webapp_memory_store",
+            user_id="unknown",
+            user_role="guest",
+            details={"memory_id": mem_id, "text_len": len(text)},
+            allowed=True,
+        )
+
     return {"id": mem_id}
 
 

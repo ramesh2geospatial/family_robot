@@ -20,6 +20,7 @@ def reset_state():
     _state.acl = None
     _state.config = None
     _state.skill_registry = None
+    _state.audit_log = None
     yield
 
 
@@ -230,3 +231,30 @@ def test_pwa_index():
     assert res.status_code == 200
     # Should return HTML (either the static file or the fallback)
     assert "FamilyRobot" in res.text
+
+
+@pytest.mark.unit
+def test_webapp_audit_logging(mock_home, mock_memory):
+    from fastapi.testclient import TestClient
+
+    from packages.core.governance.acl import ACL
+
+    mock_audit = MagicMock()
+    mock_audit.record = MagicMock()
+
+    set_state(home=mock_home, memory=mock_memory, acl=ACL(), audit_log=mock_audit)
+    client = TestClient(app)
+
+    # Test device command logs audit check
+    res = client.post(
+        "/api/device/command", json={"device_id": "light", "action": "on"}
+    )
+    assert res.status_code == 200
+    assert (
+        mock_audit.record.call_count >= 2
+    )  # one for ACL check, one for command success
+
+    # Test memory store logs audit check
+    res2 = client.post("/api/memory/store", json={"text": "Hello"})
+    assert res2.status_code == 200
+    assert mock_audit.record.call_count >= 3
