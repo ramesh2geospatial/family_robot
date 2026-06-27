@@ -75,6 +75,13 @@ class LlamaLLMClient:
         full_prompt = self._build_prompt(prompt, system)
         stop_sequences = stop or ["<|im_end|>"]
 
+        import time
+
+        logger.info(
+            "Starting local LLM generation (this may take 5-20 seconds on CPU)..."
+        )
+        start_time = time.perf_counter()
+
         try:
             result = await asyncio.to_thread(
                 self._llama.create_completion,  # type: ignore[union-attr]
@@ -84,6 +91,8 @@ class LlamaLLMClient:
                 stop=stop_sequences,
             )
             text: str = result["choices"][0]["text"].strip()  # type: ignore[index]
+            duration = time.perf_counter() - start_time
+            logger.info("Local LLM generation complete in %.2fs.", duration)
             return text
         except Exception as exc:
             logger.error("LLM generation failed: %s", exc, exc_info=True)
