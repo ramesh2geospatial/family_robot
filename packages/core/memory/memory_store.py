@@ -112,6 +112,12 @@ class MemoryStore:
         conn = self._get_connection()
         try:
             conn.execute(self._CREATE_TABLE)
+            if _HAS_SQLITE_VEC:
+                # Create virtual table for fast KNN search
+                conn.execute(
+                    "CREATE VIRTUAL TABLE IF NOT EXISTS memory_vec "
+                    "USING vec0(id TEXT PRIMARY KEY, embedding float[384])"
+                )
             conn.commit()
         finally:
             conn.close()
@@ -149,10 +155,16 @@ class MemoryStore:
             conn = self._get_connection()
             try:
                 conn.execute(
-                    "INSERT INTO memories (id, text, embedding, meta, created_at) "
+                    "INSERT INTO memories "
+                    "(id, text, embedding, meta, created_at) "
                     "VALUES (?, ?, ?, ?, ?)",
                     (mem_id, text, blob, meta_json, now),
                 )
+                if _HAS_SQLITE_VEC:
+                    conn.execute(
+                        "INSERT INTO memory_vec (id, embedding) " "VALUES (?, ?)",
+                        (mem_id, blob),
+                    )
                 conn.commit()
             finally:
                 conn.close()
@@ -167,35 +179,78 @@ class MemoryStore:
         def _do_search() -> list[dict]:
             self._ensure_db()
             query_vec = self._embed(query)
+            query_blob = _embed_to_blob(query_vec)
 
             conn = self._get_connection()
             try:
-                rows = conn.execute(
-                    "SELECT id, text, embedding, meta, created_at FROM memories"
-                ).fetchall()
+                if _HAS_SQLITE_VEC:
+                    return self._search_vec(conn, query_blob, k)
+                return self._search_brute(conn, query_vec, k)
             finally:
                 conn.close()
 
-            scored: list[tuple[float, dict]] = []
-            for row_id, row_text, row_blob, row_meta, row_ts in rows:
-                row_vec = _blob_to_embed(row_blob)
-                score = _cosine_similarity(query_vec, row_vec)
-                scored.append(
-                    (
-                        score,
-                        {
-                            "id": row_id,
-                            "text": row_text,
-                            "meta": json.loads(row_meta) if row_meta else None,
-                            "score": round(score, 4),
-                            "created_at": row_ts,
-                        },
-                    )
-                )
-            scored.sort(key=lambda x: x[0], reverse=True)
-            return [item for _, item in scored[:k]]
-
         return await asyncio.to_thread(_do_search)
+
+    def _search_vec(
+        self,
+        conn: sqlite3.Connection,
+        query_blob: bytes,
+        k: int,
+    ) -> list[dict]:
+        """KNN search via sqlite-vec virtual table."""
+        rows = conn.execute(
+            "SELECT v.id, v.distance, m.text, m.meta, m.created_at "
+            "FROM memory_vec v "
+            "JOIN memories m ON v.id = m.id "
+            "WHERE v.embedding MATCH ? "
+            "ORDER BY v.distance "
+            "LIMIT ?",
+            (query_blob, k),
+        ).fetchall()
+        results: list[dict] = []
+        for row_id, dist, text, meta_json, ts in rows:
+            # sqlite-vec returns L2 distance; convert to ~cosine
+            score = max(0.0, 1.0 - dist)
+            results.append(
+                {
+                    "id": row_id,
+                    "text": text,
+                    "meta": (json.loads(meta_json) if meta_json else None),
+                    "score": round(score, 4),
+                    "created_at": ts,
+                }
+            )
+        return results
+
+    def _search_brute(
+        self,
+        conn: sqlite3.Connection,
+        query_vec: list[float],
+        k: int,
+    ) -> list[dict]:
+        """Brute-force cosine similarity fallback."""
+        rows = conn.execute(
+            "SELECT id, text, embedding, meta, created_at " "FROM memories"
+        ).fetchall()
+
+        scored: list[tuple[float, dict]] = []
+        for row_id, text, blob, meta_json, ts in rows:
+            row_vec = _blob_to_embed(blob)
+            score = _cosine_similarity(query_vec, row_vec)
+            scored.append(
+                (
+                    score,
+                    {
+                        "id": row_id,
+                        "text": text,
+                        "meta": (json.loads(meta_json) if meta_json else None),
+                        "score": round(score, 4),
+                        "created_at": ts,
+                    },
+                )
+            )
+        scored.sort(key=lambda x: x[0], reverse=True)
+        return [item for _, item in scored[:k]]
 
     async def delete(self, memory_id: str) -> bool:
         """Delete a memory by *memory_id*. Returns True if a row was deleted."""
@@ -204,7 +259,13 @@ class MemoryStore:
             self._ensure_db()
             conn = self._get_connection()
             try:
-                cursor = conn.execute("DELETE FROM memories WHERE id = ?", (memory_id,))
+                cursor = conn.execute(
+                    "DELETE FROM memories WHERE id = ?", (memory_id,)
+                )
+                if _HAS_SQLITE_VEC:
+                    conn.execute(
+                        "DELETE FROM memory_vec WHERE id = ?", (memory_id,)
+                    )
                 conn.commit()
                 deleted = cursor.rowcount > 0
             finally:
