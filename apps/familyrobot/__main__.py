@@ -70,6 +70,7 @@ def _build_components(config: AppConfig) -> dict:
     # Expression
     tts = PiperTTSEngine(
         model_path=config.tts_model_path,
+        llm=llm,
     )
 
     # Governance

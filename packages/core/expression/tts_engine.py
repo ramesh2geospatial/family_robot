@@ -26,12 +26,14 @@ class PiperTTSEngine:
         self,
         model_path: Optional[str] = None,
         config_path: Optional[str] = None,
+        llm: Optional[object] = None,
     ) -> None:
         self._model_path = model_path
         self._config_path = config_path
         self._piper_voice: Optional[object] = None
         self._pyttsx_engine: Optional[object] = None
         self._use_piper: bool = True
+        self.llm = llm
 
     def _init_piper(self) -> None:
         """Try to initialise Piper TTS."""
@@ -122,6 +124,34 @@ class PiperTTSEngine:
         # Lazy initialisation
         if self._piper_voice is None and self._use_piper:
             await asyncio.to_thread(self._init_piper)
+
+        # Devanagari Transliteration Fallback:
+        # If the text contains Hindi/Marathi characters and we use pyttsx3,
+        # use the LLM to transliterate it to Hinglish/Minglish so SAPI5 can
+        # read it phonetically.
+        if not self._use_piper and self.llm is not None:
+            import re
+
+            if bool(re.search(r"[\u0900-\u097F]", text)):
+                try:
+                    logger.info(
+                        "Devanagari detected with English SAPI5. "
+                        "Translating to Hinglish/Minglish..."
+                    )
+                    trans_text = await self.llm.generate(
+                        prompt=(
+                            "Transliterate the following Hindi/Marathi text to "
+                            f"Hinglish/Minglish (using Latin script): {text}"
+                        ),
+                        system=(
+                            "You are a transliterator. Respond ONLY with the "
+                            "transliterated text, no extra commentary or quotes."
+                        ),
+                    )
+                    if trans_text and not trans_text.startswith("I'm sorry"):
+                        text = trans_text
+                except Exception as exc:
+                    logger.warning("Devanagari transliteration failed: %s", exc)
 
         try:
             if self._use_piper and self._piper_voice is not None:

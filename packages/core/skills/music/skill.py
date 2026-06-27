@@ -4,6 +4,7 @@ from packages.core.skills.base import BaseSkill, SkillContext, SkillResult
 
 logger = logging.getLogger(__name__)
 
+
 class MusicSkill(BaseSkill):
     """
     Skill to play/pause/skip music.
@@ -26,15 +27,29 @@ class MusicSkill(BaseSkill):
             return SkillResult(
                 spoken_response=f"Playing {song}.",
                 success=True,
-                memory_item=f"Music playing: {song}"
+                memory_item=f"Music playing: {song}",
+            )
+
+        if action == "play":
+            logger.info("[MusicPlayer] Playing default/generic music.")
+            return SkillResult(
+                spoken_response="Playing some music.",
+                success=True,
+                memory_item="Music playing: generic",
             )
 
         if action in ("pause", "stop"):
             logger.info("[MusicPlayer] Music paused/stopped.")
-            return SkillResult(spoken_response="I have stopped the music.", success=True)
+            return SkillResult(
+                spoken_response="I have stopped the music.", success=True
+            )
 
         if action == "next":
             logger.info("[MusicPlayer] Skipping to next track.")
-            return SkillResult(spoken_response="Skipping to the next track.", success=True)
+            return SkillResult(
+                spoken_response="Skipping to the next track.", success=True
+            )
 
-        return SkillResult(spoken_response="I'm not sure how to control the music.", success=False)
+        return SkillResult(
+            spoken_response="I'm not sure how to control the music.", success=False
+        )
