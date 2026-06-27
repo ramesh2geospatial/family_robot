@@ -54,6 +54,7 @@ async def run_loop(
 
     logger.info("Opening audio input…")
     await audio.open_input(samplerate=16000)
+    await audio.flush()
     logger.info("FamilyRobot loop started. Listening for wake word…")
 
     conversation_logger = components.get("conversation_logger")
@@ -126,8 +127,6 @@ async def _listen_cycle(
 ) -> None:
     """One wake-listen-respond cycle."""
 
-    # Flush any stale audio accumulated from speech/processing before starting a new listening block
-    await audio.flush()
 
     # 1. Wait for wake word
     frame = await audio.read_frame()
@@ -162,19 +161,34 @@ async def _listen_cycle(
         listening = True
         vad.reset() if hasattr(vad, "reset") else None
 
+        speech_started = False
+        silence_frames = 0
+        max_silence_frames = 30  # 3.0 seconds (each frame is 100ms)
+
         while listening and not shutdown_event.is_set():
             chunk = await audio.read_frame()
             result = await asyncio.to_thread(vad.process_chunk, chunk)
             speech_frames.append(chunk)
 
-            if result and "end" in result:
-                listening = False
-            # Safety: stop after ~15 s of speech (240 frames × 64 ms ≈ 15 s)
-            if len(speech_frames) > 240:
+            if result:
+                if "start" in result or "end" in result:
+                    speech_started = True
+                if "end" in result:
+                    listening = False
+
+            if not speech_started:
+                silence_frames += 1
+                if silence_frames >= max_silence_frames:
+                    logger.info("[MainLoop] Initial silence timeout reached (no speech started). Aborting.")
+                    listening = False
+
+            # Safety: stop after ~15 s of speech (150 frames × 100 ms = 15 s)
+            if len(speech_frames) > 150:
                 logger.warning("Speech too long; forcing STT.")
                 listening = False
 
-        if not speech_frames:
+        if not speech_started or not speech_frames:
+            logger.info("[MainLoop] No speech detected (silence or abort).")
             return
 
         # 3. Transcribe
