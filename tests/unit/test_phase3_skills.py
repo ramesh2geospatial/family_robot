@@ -2,28 +2,27 @@
 Unit and integration tests for Phase 3 capabilities.
 """
 
-from unittest.mock import AsyncMock, MagicMock
-import pytest
-import json
 import asyncio
+import json
+from unittest.mock import AsyncMock
 
-from packages.core.ports.telephony import TelephonyPort
-from packages.adapters.desktop.telephony import DesktopTelephonyAdapter
+import pytest
+
 from packages.adapters.android.telephony import TermuxTelephonyAdapter
+from packages.adapters.desktop.telephony import DesktopTelephonyAdapter
 from packages.adapters.raspberrypi.telephony import PiTelephonyAdapter
-
-from packages.core.skills.base import SkillContext, SkillResult
+from packages.core.cognition.intent_router import IntentRouter
+from packages.core.governance.identity import FamilyMember, IdentityStore, Role
+from packages.core.ports.telephony import TelephonyPort
+from packages.core.skills.base import SkillContext
 from packages.core.skills.calls.skill import CallsSkill
 from packages.core.skills.security.skill import SecuritySkill
 from packages.core.skills.sensors.skill import SensorsSkill
 
-from packages.core.governance.identity import FamilyMember, Role, IdentityStore
-from packages.core.cognition.intent_router import IntentRouter
-
-
 # ──────────────────────────────────────────────
 # Telephony Adapter Tests
 # ──────────────────────────────────────────────
+
 
 @pytest.mark.unit
 class TestTelephonyAdapters:
@@ -48,12 +47,15 @@ class TestTelephonyAdapters:
 
         adapter = PiTelephonyAdapter(mqtt_client=mock_mqtt)
         assert await adapter.make_call("+919876543210") is True
-        mock_mqtt.publish.assert_called_once_with("familyrobot/android/telephony/call", "+919876543210")
+        mock_mqtt.publish.assert_called_once_with(
+            "familyrobot/android/telephony/call", "+919876543210"
+        )
 
 
 # ──────────────────────────────────────────────
 # Intent Router Tests
 # ──────────────────────────────────────────────
+
 
 @pytest.mark.unit
 class TestPhase3Intents:
@@ -81,6 +83,7 @@ class TestPhase3Intents:
 # Calls Skill Tests
 # ──────────────────────────────────────────────
 
+
 @pytest.mark.unit
 class TestCallsSkill:
     @pytest.fixture
@@ -94,16 +97,15 @@ class TestCallsSkill:
         return store
 
     @pytest.mark.asyncio
-    async def test_call_whitelisted_contact(self, skill: CallsSkill, identity_store) -> None:
+    async def test_call_whitelisted_contact(
+        self, skill: CallsSkill, identity_store
+    ) -> None:
         mock_telephony = AsyncMock(spec=TelephonyPort)
         mock_telephony.make_call = AsyncMock(return_value=True)
 
         ctx = SkillContext(
             slots={"contact": "Ramesh"},
-            ports={
-                "identity_store": identity_store,
-                "telephony": mock_telephony
-            }
+            ports={"identity_store": identity_store, "telephony": mock_telephony},
         )
         result = await skill.execute(ctx)
         assert result.success is True
@@ -111,14 +113,13 @@ class TestCallsSkill:
         mock_telephony.make_call.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_call_unregistered_contact(self, skill: CallsSkill, identity_store) -> None:
+    async def test_call_unregistered_contact(
+        self, skill: CallsSkill, identity_store
+    ) -> None:
         mock_telephony = AsyncMock(spec=TelephonyPort)
         ctx = SkillContext(
             slots={"contact": "UnknownPerson"},
-            ports={
-                "identity_store": identity_store,
-                "telephony": mock_telephony
-            }
+            ports={"identity_store": identity_store, "telephony": mock_telephony},
         )
         result = await skill.execute(ctx)
         assert result.success is False
@@ -129,6 +130,7 @@ class TestCallsSkill:
 # ──────────────────────────────────────────────
 # Security Skill Tests
 # ──────────────────────────────────────────────
+
 
 @pytest.mark.unit
 class TestSecuritySkill:
@@ -141,7 +143,9 @@ class TestSecuritySkill:
         return IdentityStore()
 
     @pytest.mark.asyncio
-    async def test_security_check_unknown_face(self, skill: SecuritySkill, identity_store) -> None:
+    async def test_security_check_unknown_face(
+        self, skill: SecuritySkill, identity_store
+    ) -> None:
         mock_camera = AsyncMock()
         mock_camera.capture = AsyncMock(return_value=b"image_bytes")
         mock_notify = AsyncMock()
@@ -151,7 +155,7 @@ class TestSecuritySkill:
             ports={
                 "camera": mock_camera,
                 "notify": mock_notify,
-                "identity_store": identity_store
+                "identity_store": identity_store,
             }
         )
         result = await skill.execute(ctx)
@@ -160,13 +164,14 @@ class TestSecuritySkill:
         mock_notify.push.assert_called_once_with(
             user_id="parent_default",
             title="SECURITY ALERT",
-            body="Unknown face detected at night!"
+            body="Unknown face detected at night!",
         )
 
 
 # ──────────────────────────────────────────────
 # Sensors Skill Tests
 # ──────────────────────────────────────────────
+
 
 @pytest.mark.unit
 class TestSensorsSkill:
@@ -196,7 +201,9 @@ class TestSensorsSkill:
     async def test_sensors_mqtt_smoke_alarm(self, skill: SensorsSkill) -> None:
         mock_notify = AsyncMock()
         payload = json.dumps({"smoke": True})
-        skill.handle_mqtt_message("zigbee2mqtt/kitchen_smoke", payload, {"notify": mock_notify})
+        skill.handle_mqtt_message(
+            "zigbee2mqtt/kitchen_smoke", payload, {"notify": mock_notify}
+        )
 
         # Yield control to let asyncio.create_task run the async push notify callback
         await asyncio.sleep(0.1)
@@ -207,5 +214,5 @@ class TestSensorsSkill:
         mock_notify.push.assert_called_once_with(
             user_id="parent_default",
             title="FIRE ALERT",
-            body="Kitchen smoke sensor has triggered!"
+            body="Kitchen smoke sensor has triggered!",
         )

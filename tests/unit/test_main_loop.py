@@ -9,16 +9,14 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from packages.core.cognition.intent_router import Intent
-
-
 # We import the module under test after defining mocks
 from apps.familyrobot.main_loop import _handle_intent, _speak, run_loop
-
+from packages.core.cognition.intent_router import Intent
 
 # ──────────────────────────────────────────────
 # Helpers: build a full mock component set
 # ──────────────────────────────────────────────
+
 
 def _mock_components(
     *,
@@ -50,7 +48,9 @@ def _mock_components(
 
     memory = AsyncMock()
     memory.store = AsyncMock(return_value="abcd1234-0000-0000-0000-000000000000")
-    memory.search = AsyncMock(return_value=[{"text": "Aarav birthday March 5", "score": 0.95}])
+    memory.search = AsyncMock(
+        return_value=[{"text": "Aarav birthday March 5", "score": 0.95}]
+    )
 
     tts = AsyncMock()
     tts.synthesize = AsyncMock(return_value=(b"\x00" * 100, 22050))
@@ -60,11 +60,13 @@ def _mock_components(
 
     vad = MagicMock()
     _vad_calls = {"n": 0}
+
     def _vad_process(chunk):
         _vad_calls["n"] += 1
         if _vad_calls["n"] >= vad_end_after:
             return {"end": _vad_calls["n"]}
         return None
+
     vad.process_chunk = MagicMock(side_effect=_vad_process)
 
     stt = MagicMock()
@@ -96,6 +98,7 @@ def _mock_components(
 # _handle_intent unit tests
 # ──────────────────────────────────────────────
 
+
 @pytest.mark.unit
 class TestHandleIntent:
 
@@ -104,7 +107,9 @@ class TestHandleIntent:
         home = AsyncMock()
         home.set_switch = AsyncMock(return_value=True)
         intent = Intent("home_control", 0.9, {"devices": ["geyser"], "action": "on"})
-        result = await _handle_intent(intent, "turn on geyser", home, AsyncMock(), AsyncMock())
+        result = await _handle_intent(
+            intent, "turn on geyser", home, AsyncMock(), AsyncMock()
+        )
         assert "geyser" in result.lower()
         home.set_switch.assert_called_once_with("geyser", True)
 
@@ -113,7 +118,9 @@ class TestHandleIntent:
         memory = AsyncMock()
         memory.store = AsyncMock(return_value="abc12345-xxxx")
         intent = Intent("memory_store", 0.9, {})
-        result = await _handle_intent(intent, "remember x", AsyncMock(), AsyncMock(), memory)
+        result = await _handle_intent(
+            intent, "remember x", AsyncMock(), AsyncMock(), memory
+        )
         assert "saved" in result.lower()
 
     @pytest.mark.asyncio
@@ -121,7 +128,9 @@ class TestHandleIntent:
         memory = AsyncMock()
         memory.search = AsyncMock(return_value=[{"text": "March 5", "score": 0.9}])
         intent = Intent("memory_recall", 0.9, {})
-        result = await _handle_intent(intent, "when is birthday", AsyncMock(), AsyncMock(), memory)
+        result = await _handle_intent(
+            intent, "when is birthday", AsyncMock(), AsyncMock(), memory
+        )
         assert "March 5" in result
 
     @pytest.mark.asyncio
@@ -137,19 +146,24 @@ class TestHandleIntent:
         llm = AsyncMock()
         llm.generate = AsyncMock(return_value="Here is a joke.")
         intent = Intent("general_chat", 0.5, {})
-        result = await _handle_intent(intent, "tell joke", AsyncMock(), llm, AsyncMock())
+        result = await _handle_intent(
+            intent, "tell joke", AsyncMock(), llm, AsyncMock()
+        )
         assert "joke" in result.lower()
 
     @pytest.mark.asyncio
     async def test_timer(self) -> None:
         intent = Intent("timer", 0.9, {"duration": {"minutes": 5}})
-        result = await _handle_intent(intent, "set timer", AsyncMock(), AsyncMock(), AsyncMock())
+        result = await _handle_intent(
+            intent, "set timer", AsyncMock(), AsyncMock(), AsyncMock()
+        )
         assert "coming soon" in result.lower()
 
 
 # ──────────────────────────────────────────────
 # _speak unit test
 # ──────────────────────────────────────────────
+
 
 @pytest.mark.unit
 class TestSpeak:
@@ -176,6 +190,7 @@ class TestSpeak:
 # run_loop integration (quick shutdown)
 # ──────────────────────────────────────────────
 
+
 @pytest.mark.unit
 class TestRunLoop:
 
@@ -191,7 +206,9 @@ class TestRunLoop:
     @pytest.mark.asyncio
     async def test_loop_calls_conversation_logger(self) -> None:
         """Loop should log the interaction via conversation_logger."""
-        comps = _mock_components(wake_score=0.9, vad_end_after=1, transcription="test hello")
+        comps = _mock_components(
+            wake_score=0.9, vad_end_after=1, transcription="test hello"
+        )
         shutdown = asyncio.Event()
 
         # Set shutdown inside the audio play mock so the loop exits after one speak/log cycle
@@ -201,8 +218,8 @@ class TestRunLoop:
         async def run_and_stop():
             await asyncio.sleep(0.5)
             shutdown.set()
+
         asyncio.create_task(run_and_stop())
 
         await run_loop(comps, shutdown_event=shutdown)
         comps["conversation_logger"].log_interaction.assert_called_once()
-

@@ -4,7 +4,7 @@ Shared asynchronous MQTT client wrapper using aiomqtt.
 
 import asyncio
 import logging
-from typing import Dict, Optional, Any
+from typing import Any, Dict, Optional
 
 from aiomqtt import Client
 
@@ -126,7 +126,9 @@ class MqttHomeClient:
                                     else:
                                         callback(topic, payload)
                                 except Exception as err:
-                                    logger.error(f"Error in MQTT listener callback: {err}")
+                                    logger.error(
+                                        f"Error in MQTT listener callback: {err}"
+                                    )
 
                         # Parse Tasmota topic
                         # stat/<device>/POWER

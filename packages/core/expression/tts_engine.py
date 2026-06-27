@@ -70,7 +70,9 @@ class PiperTTSEngine:
         pyttsx3 does not easily return raw PCM, so we save to a temp
         WAV file and read it back.
         """
-        import tempfile, os
+        import os
+        import tempfile
+
         try:
             import pyttsx3  # type: ignore[import-untyped]
         except ImportError:
@@ -129,4 +131,3 @@ class PiperTTSEngine:
         except Exception as exc:
             logger.error("TTS synthesis failed: %s", exc, exc_info=True)
             return b"\x00" * 22050, 22050
-

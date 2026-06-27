@@ -8,7 +8,7 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from packages.core.webapp.app import app, set_state, AppState, _state
+from packages.core.webapp.app import _state, app, set_state
 
 
 # Reset state before each test
@@ -36,15 +36,16 @@ def mock_home():
 def mock_memory():
     mem = AsyncMock()
     mem.store = AsyncMock(return_value="mem-123")
-    mem.search = AsyncMock(return_value=[
-        {"id": "m1", "text": "test memory", "score": 0.9}
-    ])
+    mem.search = AsyncMock(
+        return_value=[{"id": "m1", "text": "test memory", "score": 0.9}]
+    )
     return mem
 
 
 @pytest.fixture
 def mock_identity_store():
     from packages.core.governance.identity import IdentityStore
+
     return IdentityStore()
 
 
@@ -58,9 +59,11 @@ def mock_config():
 
 # ── Status endpoint ──────────────────────────────────────────────
 
+
 @pytest.mark.unit
 def test_status_endpoint(mock_config, mock_identity_store):
     from fastapi.testclient import TestClient
+
     set_state(config=mock_config, identity_store=mock_identity_store)
     client = TestClient(app)
     res = client.get("/api/status")
@@ -73,14 +76,16 @@ def test_status_endpoint(mock_config, mock_identity_store):
 
 # ── Device control ───────────────────────────────────────────────
 
+
 @pytest.mark.unit
 def test_device_on(mock_home):
     from fastapi.testclient import TestClient
+
     set_state(home=mock_home)
     client = TestClient(app)
-    res = client.post("/api/device/command", json={
-        "device_id": "living_room_light", "action": "on"
-    })
+    res = client.post(
+        "/api/device/command", json={"device_id": "living_room_light", "action": "on"}
+    )
     assert res.status_code == 200
     mock_home.set_switch.assert_called_once_with("living_room_light", True)
 
@@ -88,11 +93,10 @@ def test_device_on(mock_home):
 @pytest.mark.unit
 def test_device_off(mock_home):
     from fastapi.testclient import TestClient
+
     set_state(home=mock_home)
     client = TestClient(app)
-    res = client.post("/api/device/command", json={
-        "device_id": "fan", "action": "off"
-    })
+    res = client.post("/api/device/command", json={"device_id": "fan", "action": "off"})
     assert res.status_code == 200
     mock_home.set_switch.assert_called_once_with("fan", False)
 
@@ -100,12 +104,14 @@ def test_device_off(mock_home):
 @pytest.mark.unit
 def test_device_set_level(mock_home):
     from fastapi.testclient import TestClient
+
     mock_home.get_state = AsyncMock(return_value={"pct": 75})
     set_state(home=mock_home)
     client = TestClient(app)
-    res = client.post("/api/device/command", json={
-        "device_id": "fan", "action": "set_level", "value": 75
-    })
+    res = client.post(
+        "/api/device/command",
+        json={"device_id": "fan", "action": "set_level", "value": 75},
+    )
     assert res.status_code == 200
     mock_home.set_level.assert_called_once_with("fan", 75)
 
@@ -113,16 +119,18 @@ def test_device_set_level(mock_home):
 @pytest.mark.unit
 def test_device_no_home():
     from fastapi.testclient import TestClient
+
     client = TestClient(app)
-    res = client.post("/api/device/command", json={
-        "device_id": "light", "action": "on"
-    })
+    res = client.post(
+        "/api/device/command", json={"device_id": "light", "action": "on"}
+    )
     assert res.status_code == 503
 
 
 @pytest.mark.unit
 def test_get_device_state(mock_home):
     from fastapi.testclient import TestClient
+
     set_state(home=mock_home)
     client = TestClient(app)
     res = client.get("/api/device/living_room_light/state")
@@ -132,14 +140,16 @@ def test_get_device_state(mock_home):
 
 # ── Enrollment ───────────────────────────────────────────────────
 
+
 @pytest.mark.unit
 def test_enroll_member(mock_identity_store):
     from fastapi.testclient import TestClient
+
     set_state(identity_store=mock_identity_store)
     client = TestClient(app)
-    res = client.post("/api/enroll", json={
-        "name": "Aarav", "role": "child", "language": "hi"
-    })
+    res = client.post(
+        "/api/enroll", json={"name": "Aarav", "role": "child", "language": "hi"}
+    )
     assert res.status_code == 200
     data = res.json()
     assert data["name"] == "Aarav"
@@ -150,19 +160,22 @@ def test_enroll_member(mock_identity_store):
 @pytest.mark.unit
 def test_enroll_invalid_role(mock_identity_store):
     from fastapi.testclient import TestClient
+
     set_state(identity_store=mock_identity_store)
     client = TestClient(app)
-    res = client.post("/api/enroll", json={
-        "name": "Test", "role": "superadmin"
-    })
+    res = client.post("/api/enroll", json={"name": "Test", "role": "superadmin"})
     assert res.status_code == 400
 
 
 @pytest.mark.unit
 def test_list_members(mock_identity_store):
     from fastapi.testclient import TestClient
+
     from packages.core.governance.identity import FamilyMember, Role
-    mock_identity_store.enroll(FamilyMember(user_id="u1", name="Papa", role=Role.PARENT))
+
+    mock_identity_store.enroll(
+        FamilyMember(user_id="u1", name="Papa", role=Role.PARENT)
+    )
     set_state(identity_store=mock_identity_store)
     client = TestClient(app)
     res = client.get("/api/members")
@@ -172,9 +185,11 @@ def test_list_members(mock_identity_store):
 
 # ── Memory ───────────────────────────────────────────────────────
 
+
 @pytest.mark.unit
 def test_search_memory(mock_memory):
     from fastapi.testclient import TestClient
+
     set_state(memory=mock_memory)
     client = TestClient(app)
     res = client.post("/api/memory/search", json={"query": "test", "k": 3})
@@ -185,6 +200,7 @@ def test_search_memory(mock_memory):
 @pytest.mark.unit
 def test_store_memory(mock_memory):
     from fastapi.testclient import TestClient
+
     set_state(memory=mock_memory)
     client = TestClient(app)
     res = client.post("/api/memory/store", json={"text": "remember this"})
@@ -195,6 +211,7 @@ def test_store_memory(mock_memory):
 @pytest.mark.unit
 def test_store_memory_empty():
     from fastapi.testclient import TestClient
+
     set_state(memory=AsyncMock())
     client = TestClient(app)
     res = client.post("/api/memory/store", json={"text": ""})
@@ -203,9 +220,11 @@ def test_store_memory_empty():
 
 # ── PWA Shell ────────────────────────────────────────────────────
 
+
 @pytest.mark.unit
 def test_pwa_index():
     from fastapi.testclient import TestClient
+
     client = TestClient(app)
     res = client.get("/")
     assert res.status_code == 200

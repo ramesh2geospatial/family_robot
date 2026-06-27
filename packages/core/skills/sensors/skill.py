@@ -1,9 +1,11 @@
-import logging
-import json
 import asyncio
+import json
+import logging
+
 from packages.core.skills.base import BaseSkill, SkillContext, SkillResult
 
 logger = logging.getLogger(__name__)
+
 
 class SensorsSkill(BaseSkill):
     """
@@ -44,22 +46,23 @@ class SensorsSkill(BaseSkill):
                     notify = ports.get("notify")
                     if notify:
                         # Push critical warning
-                        asyncio.create_task(notify.push(
-                            user_id="parent_default",
-                            title="FIRE ALERT",
-                            body="Kitchen smoke sensor has triggered!"
-                        ))
+                        asyncio.create_task(
+                            notify.push(
+                                user_id="parent_default",
+                                title="FIRE ALERT",
+                                body="Kitchen smoke sensor has triggered!",
+                            )
+                        )
         except Exception as e:
             logger.error(f"Failed to process sensor MQTT update: {e}")
 
     async def execute(self, ctx: SkillContext) -> SkillResult:
-        status_msg = "Front door is open." if self.door_open else "Front door is closed."
+        status_msg = (
+            "Front door is open." if self.door_open else "Front door is closed."
+        )
         if self.smoke_detected:
             status_msg += " Warning: Smoke detected in kitchen!"
         else:
             status_msg += " Smoke detectors are clear."
 
-        return SkillResult(
-            spoken_response=status_msg,
-            success=True
-        )
+        return SkillResult(spoken_response=status_msg, success=True)

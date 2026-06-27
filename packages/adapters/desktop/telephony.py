@@ -3,9 +3,11 @@ Mock telephony adapter for Desktop.
 """
 
 import logging
+
 from packages.core.ports.telephony import TelephonyPort
 
 logger = logging.getLogger(__name__)
+
 
 class DesktopTelephonyAdapter(TelephonyPort):
     """
@@ -17,5 +19,7 @@ class DesktopTelephonyAdapter(TelephonyPort):
         return True
 
     async def open_whatsapp(self, phone_number: str, message: str) -> bool:
-        logger.info(f"[Telephony Mock] Opening WhatsApp chat with {phone_number}: message='{message}'")
+        logger.info(
+            f"[Telephony Mock] Opening WhatsApp chat with {phone_number}: message='{message}'"
+        )
         return True

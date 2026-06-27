@@ -12,21 +12,22 @@ from __future__ import annotations
 
 import asyncio
 import logging
-import os
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Any, Optional
 
-from packages.core.governance.identity import UNKNOWN_USER
 from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
+from packages.core.governance.identity import UNKNOWN_USER
+
 logger = logging.getLogger(__name__)
 
 # ── Pydantic request / response models ───────────────────────────
+
 
 class DeviceCommand(BaseModel):
     device_id: str
@@ -67,6 +68,7 @@ class StatusResponse(BaseModel):
 
 
 # ── App state (injected by the orchestrator) ─────────────────────
+
 
 class AppState:
     """Shared application state — injected at startup."""
@@ -112,6 +114,7 @@ def set_state(
 
 # ── FastAPI app ──────────────────────────────────────────────────
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info("FamilyRobot PWA starting up")
@@ -141,6 +144,7 @@ if _static_dir.exists():
 
 # ── Routes: Status ───────────────────────────────────────────────
 
+
 @app.get("/api/status", response_model=StatusResponse)
 async def get_status():
     s = get_state()
@@ -155,6 +159,7 @@ async def get_status():
 
 
 # ── Routes: Device Control ──────────────────────────────────────
+
 
 @app.post("/api/device/command", response_model=DeviceState)
 async def device_command(cmd: DeviceCommand):
@@ -201,6 +206,7 @@ async def get_device_state(device_id: str):
 
 # ── Routes: Enrollment ──────────────────────────────────────────
 
+
 @app.post("/api/enroll")
 async def enroll_member(req: EnrollRequest):
     """Enroll a new family member (name + role).
@@ -239,13 +245,19 @@ async def list_members():
     members = s.identity_store.list_members()
     return {
         "members": [
-            {"user_id": m.user_id, "name": m.name, "role": m.role.value, "language": m.language}
+            {
+                "user_id": m.user_id,
+                "name": m.name,
+                "role": m.role.value,
+                "language": m.language,
+            }
             for m in members
         ]
     }
 
 
 # ── Routes: Memory ──────────────────────────────────────────────
+
 
 @app.post("/api/memory/search")
 async def search_memory(req: MemorySearchRequest):
@@ -271,12 +283,15 @@ async def store_memory(body: dict):
 
 # ── Routes: PWA Shell ────────────────────────────────────────────
 
+
 @app.get("/", response_class=HTMLResponse)
 async def serve_pwa():
     index = _static_dir / "index.html"
     if index.exists():
         return FileResponse(str(index))
-    return HTMLResponse("<h1>FamilyRobot Companion</h1><p>PWA static files not found.</p>")
+    return HTMLResponse(
+        "<h1>FamilyRobot Companion</h1><p>PWA static files not found.</p>"
+    )
 
 
 @app.get("/manifest.json")
@@ -289,17 +304,22 @@ async def serve_manifest():
 
 # ── WebSocket: Real-time status ──────────────────────────────────
 
+
 @app.websocket("/ws/status")
 async def ws_status(websocket: WebSocket):
     await websocket.accept()
     try:
         while True:
             s = get_state()
-            member_count = len(s.identity_store.list_members()) if s.identity_store else 0
-            await websocket.send_json({
-                "status": "running",
-                "enrolled_members": member_count,
-            })
+            member_count = (
+                len(s.identity_store.list_members()) if s.identity_store else 0
+            )
+            await websocket.send_json(
+                {
+                    "status": "running",
+                    "enrolled_members": member_count,
+                }
+            )
             await asyncio.sleep(5)
     except WebSocketDisconnect:
         pass

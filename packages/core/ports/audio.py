@@ -26,4 +26,3 @@ class AudioPort(Protocol):
     async def flush(self) -> None:
         """Flush any buffered audio input."""
         ...
-

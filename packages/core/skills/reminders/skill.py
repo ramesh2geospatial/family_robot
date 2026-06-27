@@ -7,10 +7,9 @@ persist to SQLite and fire via asyncio scheduled tasks.
 
 from __future__ import annotations
 
-import asyncio
 import logging
 import uuid
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Optional
 
@@ -61,7 +60,9 @@ class RemindersSkill(BaseSkill):
             id=str(uuid.uuid4()),
             task=task,
             created_at=datetime.now(timezone.utc).isoformat(),
-            duration_seconds=duration.get("seconds", 0) if isinstance(duration, dict) else None,
+            duration_seconds=(
+                duration.get("seconds", 0) if isinstance(duration, dict) else None
+            ),
         )
         self._reminders.append(reminder)
         logger.info("Reminder set: %s", task)
@@ -87,6 +88,4 @@ class RemindersSkill(BaseSkill):
         if not active:
             return SkillResult(spoken_response="No reminders to cancel.")
         active[-1].fired = True
-        return SkillResult(
-            spoken_response=f"Cancelled reminder: {active[-1].task}"
-        )
+        return SkillResult(spoken_response=f"Cancelled reminder: {active[-1].task}")

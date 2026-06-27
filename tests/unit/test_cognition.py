@@ -4,18 +4,17 @@ Unit tests for the cognition package (IntentRouter + LlamaLLMClient).
 
 from __future__ import annotations
 
-import asyncio
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from packages.core.cognition.intent_router import Intent, IntentRouter
+from packages.core.cognition.intent_router import IntentRouter
 from packages.core.cognition.llm_client import LlamaLLMClient
-
 
 # ──────────────────────────────────────────────
 # IntentRouter – rule-based classification
 # ──────────────────────────────────────────────
+
 
 @pytest.mark.unit
 class TestIntentRouterRules:
@@ -91,6 +90,7 @@ class TestIntentRouterRules:
 # IntentRouter – LLM fallback
 # ──────────────────────────────────────────────
 
+
 @pytest.mark.unit
 class TestIntentRouterLLMFallback:
 
@@ -117,6 +117,7 @@ class TestIntentRouterLLMFallback:
 # ──────────────────────────────────────────────
 # LlamaLLMClient
 # ──────────────────────────────────────────────
+
 
 @pytest.mark.unit
 class TestLlamaLLMClient:

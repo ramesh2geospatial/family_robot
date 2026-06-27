@@ -1,9 +1,10 @@
 import asyncio
-import io
 import os
 import wave
-import pyttsx3
+
 import pyaudio
+import pyttsx3
+
 
 def synthesize(text):
     engine = pyttsx3.init()
@@ -18,10 +19,11 @@ def synthesize(text):
     os.remove(tmp)
     return pcm, sr
 
+
 async def main():
     pcm, sr = await asyncio.to_thread(synthesize, "Hello from the thread pool!")
     print(f"Generated {len(pcm)} bytes at {sr} Hz")
-    
+
     # Play
     p = pyaudio.PyAudio()
     stream = p.open(format=pyaudio.paInt16, channels=1, rate=sr, output=True)
@@ -30,6 +32,7 @@ async def main():
     stream.close()
     p.terminate()
     print("Done!")
+
 
 if __name__ == "__main__":
     asyncio.run(main())

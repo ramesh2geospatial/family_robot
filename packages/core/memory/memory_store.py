@@ -120,7 +120,9 @@ class MemoryStore:
     def _ensure_embedder(self) -> None:
         if self._embedder is not None:
             return
-        from sentence_transformers import SentenceTransformer  # type: ignore[import-untyped]
+        from sentence_transformers import (
+            SentenceTransformer,  # type: ignore[import-untyped]
+        )
 
         logger.info("Loading embedding model: %s", self._embedding_model_name)
         self._embedder = SentenceTransformer(self._embedding_model_name)
@@ -202,9 +204,7 @@ class MemoryStore:
             self._ensure_db()
             conn = self._get_connection()
             try:
-                cursor = conn.execute(
-                    "DELETE FROM memories WHERE id = ?", (memory_id,)
-                )
+                cursor = conn.execute("DELETE FROM memories WHERE id = ?", (memory_id,))
                 conn.commit()
                 deleted = cursor.rowcount > 0
             finally:

@@ -1,8 +1,10 @@
 import logging
-from packages.core.skills.base import BaseSkill, SkillContext, SkillResult
+
 from packages.core.governance.identity import UNKNOWN_USER
+from packages.core.skills.base import BaseSkill, SkillContext, SkillResult
 
 logger = logging.getLogger(__name__)
+
 
 class SecuritySkill(BaseSkill):
     """
@@ -25,7 +27,7 @@ class SecuritySkill(BaseSkill):
         if not camera or not notify or not identity_store:
             return SkillResult(
                 spoken_response="Security components are currently unavailable.",
-                success=False
+                success=False,
             )
 
         # 1. Capture image frame
@@ -36,7 +38,10 @@ class SecuritySkill(BaseSkill):
             await camera.close()
 
         if frame is None:
-            return SkillResult(spoken_response="Failed to obtain image from security camera.", success=False)
+            return SkillResult(
+                spoken_response="Failed to obtain image from security camera.",
+                success=False,
+            )
 
         # 2. Match face (Simulate detecting an unknown face for night alerts)
         # On production, InsightFace embeddings are extracted from `frame` and compared.
@@ -49,15 +54,15 @@ class SecuritySkill(BaseSkill):
             await notify.push(
                 user_id="parent_default",
                 title="SECURITY ALERT",
-                body="Unknown face detected at night!"
+                body="Unknown face detected at night!",
             )
             return SkillResult(
                 spoken_response="Alert! I detected an unknown face outside and pushed a high-priority notification to Ramesh.",
                 success=True,
-                memory_item="Security alert: unknown face detected."
+                memory_item="Security alert: unknown face detected.",
             )
         else:
             return SkillResult(
                 spoken_response=f"Security check clear. I saw {detected_user.name}.",
-                success=True
+                success=True,
             )

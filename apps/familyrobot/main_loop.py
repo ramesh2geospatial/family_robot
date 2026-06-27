@@ -11,7 +11,7 @@ import logging
 import time
 
 from packages.core.expression.response_formatter import format_response
-from packages.core.governance import ACL, IdentityStore, AuditLog, UNKNOWN_USER
+from packages.core.governance import ACL, UNKNOWN_USER, AuditLog, IdentityStore
 
 logger = logging.getLogger(__name__)
 
@@ -75,10 +75,21 @@ async def run_loop(
     try:
         while not shutdown_event.is_set():
             await _listen_cycle(
-                audio, home, llm, memory, tts,
-                wakeword, vad, stt, intent_router,
-                conversation_logger, acl, identity_store, audit_log,
-                skill_registry, ports,
+                audio,
+                home,
+                llm,
+                memory,
+                tts,
+                wakeword,
+                vad,
+                stt,
+                intent_router,
+                conversation_logger,
+                acl,
+                identity_store,
+                audit_log,
+                skill_registry,
+                ports,
                 shutdown_event,
             )
     except asyncio.CancelledError:
@@ -92,10 +103,21 @@ async def run_loop(
 
 
 async def _listen_cycle(
-    audio, home, llm, memory, tts,
-    wakeword, vad, stt, intent_router,
-    conversation_logger, acl, identity_store, audit_log,
-    skill_registry, ports,
+    audio,
+    home,
+    llm,
+    memory,
+    tts,
+    wakeword,
+    vad,
+    stt,
+    intent_router,
+    conversation_logger,
+    acl,
+    identity_store,
+    audit_log,
+    skill_registry,
+    ports,
     shutdown_event: asyncio.Event,
 ) -> None:
     """One wake-listen-respond cycle."""
@@ -146,7 +168,7 @@ async def _listen_cycle(
                 response_text=_FALLBACK_MSG,
                 processing_time_s=processing_time,
                 audio_duration_s=len(speech_frames) * 0.1,
-                tts_engine="piper" if getattr(tts, "_use_piper", False) else "pyttsx3"
+                tts_engine="piper" if getattr(tts, "_use_piper", False) else "pyttsx3",
             )
         return
 
@@ -160,7 +182,7 @@ async def _listen_cycle(
                 response_text="",
                 processing_time_s=processing_time,
                 audio_duration_s=len(speech_frames) * 0.1,
-                tts_engine="none"
+                tts_engine="none",
             )
         return
 
@@ -181,7 +203,12 @@ async def _listen_cycle(
     # 4-7. Intent → action → format → speak
     try:
         intent = await intent_router.classify(clean_text)
-        logger.info("Intent: %s (%.2f) entities=%s", intent.name, intent.confidence, intent.entities)
+        logger.info(
+            "Intent: %s (%.2f) entities=%s",
+            intent.name,
+            intent.confidence,
+            intent.entities,
+        )
 
         # Enforce ACL Check
         acl_result = acl.check_intent(user, intent.name, intent.entities)
@@ -197,8 +224,14 @@ async def _listen_cycle(
             response = acl_result.spoken_denial
         else:
             raw_response = await _handle_intent(
-                intent, clean_text, home, llm, memory,
-                skill_registry=skill_registry, ports=ports, user=user
+                intent,
+                clean_text,
+                home,
+                llm,
+                memory,
+                skill_registry=skill_registry,
+                ports=ports,
+                user=user,
             )
             response = format_response(raw_response, intent.name)
     except Exception as exc:
@@ -213,18 +246,17 @@ async def _listen_cycle(
         conversation_logger.log_interaction(
             detected_language=lang,
             raw_text=text,
-            intent=intent.name if 'intent' in locals() else "unknown",
-            intent_confidence=intent.confidence if 'intent' in locals() else 0.0,
+            intent=intent.name if "intent" in locals() else "unknown",
+            intent_confidence=intent.confidence if "intent" in locals() else 0.0,
             response_text=response,
             processing_time_s=processing_time,
             audio_duration_s=len(speech_frames) * 0.1,
-            tts_engine="piper" if getattr(tts, "_use_piper", False) else "pyttsx3"
+            tts_engine="piper" if getattr(tts, "_use_piper", False) else "pyttsx3",
         )
 
 
 async def _handle_intent(
-    intent, text: str, home, llm, memory,
-    skill_registry=None, ports=None, user=None
+    intent, text: str, home, llm, memory, skill_registry=None, ports=None, user=None
 ) -> str:
     """Route intent to the appropriate handler and return raw text."""
 
@@ -232,6 +264,7 @@ async def _handle_intent(
         skill = skill_registry.get_skill(intent.name)
         if skill:
             from packages.core.skills import SkillContext
+
             ctx = SkillContext(
                 user_id=user.user_id if user else "unknown",
                 user_role=user.role.value if user else "guest",
@@ -259,9 +292,10 @@ async def _handle_intent(
         for dev in devices:
             ok = await home.set_switch(dev, on)
             state_word = "on" if on else "off"
-            results.append(f"Turned {state_word} the {dev}." if ok
-                           else f"Failed to control {dev}.")
-        return " ".join(results) if results else f"I'll try to handle that."
+            results.append(
+                f"Turned {state_word} the {dev}." if ok else f"Failed to control {dev}."
+            )
+        return " ".join(results) if results else "I'll try to handle that."
 
     if intent.name == "memory_store":
         mem_id = await memory.store(text)

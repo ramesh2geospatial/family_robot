@@ -19,9 +19,20 @@ from apps.familyrobot.wiring import wire_components
 from packages.core.cognition import IntentRouter, LlamaLLMClient
 from packages.core.config import AppConfig, load_config
 from packages.core.expression import PiperTTSEngine
-from packages.core.governance import ConversationLogger, ACL, IdentityStore, AuditLog, FamilyMember, Role
+from packages.core.governance import (
+    ACL,
+    AuditLog,
+    ConversationLogger,
+    FamilyMember,
+    IdentityStore,
+    Role,
+)
 from packages.core.memory import MemoryStore
-from packages.core.perception import SpeechToText, VoiceActivityDetector, WakeWordDetector
+from packages.core.perception import (
+    SpeechToText,
+    VoiceActivityDetector,
+    WakeWordDetector,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -70,20 +81,25 @@ def _build_components(config: AppConfig) -> dict:
     audit_log = AuditLog(log_path="data/audit.jsonl")
 
     # Enroll default mock users for ACL verification
-    identity_store.enroll(FamilyMember(user_id="parent_default", name="Ramesh", role=Role.PARENT))
-    identity_store.enroll(FamilyMember(user_id="child_default", name="Arjun", role=Role.CHILD))
+    identity_store.enroll(
+        FamilyMember(user_id="parent_default", name="Ramesh", role=Role.PARENT)
+    )
+    identity_store.enroll(
+        FamilyMember(user_id="child_default", name="Arjun", role=Role.CHILD)
+    )
 
     # Skill discovery and registry
     from packages.core.skills import (
-        SkillRegistry,
-        LightsSkill,
-        RemindersSkill,
-        MemoryAdminSkill,
         AssistantSkill,
         CallsSkill,
+        LightsSkill,
+        MemoryAdminSkill,
+        RemindersSkill,
         SecuritySkill,
         SensorsSkill,
+        SkillRegistry,
     )
+
     skill_registry = SkillRegistry()
     skill_registry.register(LightsSkill(), ["home_control"])
     skill_registry.register(RemindersSkill(), ["timer", "reminder"])
@@ -102,7 +118,7 @@ def _build_components(config: AppConfig) -> dict:
             "zigbee2mqtt/",
             lambda topic, payload: sensors_skill.handle_mqtt_message(
                 topic, payload, {"notify": wired.notify}
-            )
+            ),
         )
 
     return {
@@ -154,7 +170,9 @@ def main() -> int:
     )
 
     config = load_config(platform=args.platform)
-    logger.info("Platform: %s | Wake word: %s", config.platform, config.system.wake_word)
+    logger.info(
+        "Platform: %s | Wake word: %s", config.platform, config.system.wake_word
+    )
 
     components = _build_components(config)
     shutdown_event = asyncio.Event()

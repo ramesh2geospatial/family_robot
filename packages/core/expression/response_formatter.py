@@ -12,14 +12,14 @@ _MAX_WORDS = 200
 
 # Markdown artefacts to strip
 _MD_PATTERNS = [
-    (re.compile(r"```[\s\S]*?```"), ""),       # fenced code blocks
-    (re.compile(r"`([^`]+)`"), r"\1"),          # inline code
-    (re.compile(r"\*\*([^*]+)\*\*"), r"\1"),    # bold
-    (re.compile(r"\*([^*]+)\*"), r"\1"),         # italic
+    (re.compile(r"```[\s\S]*?```"), ""),  # fenced code blocks
+    (re.compile(r"`([^`]+)`"), r"\1"),  # inline code
+    (re.compile(r"\*\*([^*]+)\*\*"), r"\1"),  # bold
+    (re.compile(r"\*([^*]+)\*"), r"\1"),  # italic
     (re.compile(r"^#{1,6}\s+", re.MULTILINE), ""),  # headings
-    (re.compile(r"^[-*]\s+", re.MULTILINE), ""),     # bullet lists
-    (re.compile(r"^\d+\.\s+", re.MULTILINE), ""),    # numbered lists
-    (re.compile(r"\[([^\]]+)\]\([^)]+\)"), r"\1"),   # links → text
+    (re.compile(r"^[-*]\s+", re.MULTILINE), ""),  # bullet lists
+    (re.compile(r"^\d+\.\s+", re.MULTILINE), ""),  # numbered lists
+    (re.compile(r"\[([^\]]+)\]\([^)]+\)"), r"\1"),  # links → text
 ]
 
 _INTENT_PREFIXES: dict[str, str] = {

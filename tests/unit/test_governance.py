@@ -4,12 +4,11 @@ Unit tests for the governance package (Identity, ACL, AuditLog).
 
 from __future__ import annotations
 
-import json
 from pathlib import Path
 
 import pytest
 
-from packages.core.governance.acl import ACL, ACLResult
+from packages.core.governance.acl import ACL
 from packages.core.governance.audit_log import AuditLog
 from packages.core.governance.conversation_log import ConversationLogger
 from packages.core.governance.identity import (
@@ -19,10 +18,10 @@ from packages.core.governance.identity import (
     Role,
 )
 
-
 # ──────────────────────────────────────────────
 # Identity
 # ──────────────────────────────────────────────
+
 
 @pytest.mark.unit
 class TestIdentity:
@@ -60,6 +59,7 @@ class TestIdentity:
 # ACL – Permission Matrix
 # ──────────────────────────────────────────────
 
+
 @pytest.mark.unit
 class TestACL:
 
@@ -89,7 +89,9 @@ class TestACL:
 
     # ── Tier 1: everyone allowed ──
 
-    def test_lights_allowed_for_all(self, acl: ACL, parent, adult, teen, child, guest) -> None:
+    def test_lights_allowed_for_all(
+        self, acl: ACL, parent, adult, teen, child, guest
+    ) -> None:
         for user in [parent, adult, teen, child, guest]:
             assert acl.check_permission(user, "control_lights").allowed is True
 
@@ -189,15 +191,26 @@ class TestACL:
 # Audit Log
 # ──────────────────────────────────────────────
 
+
 @pytest.mark.unit
 class TestAuditLog:
 
     def test_record_and_read(self, tmp_path: Path) -> None:
         log = AuditLog(log_path=str(tmp_path / "audit.jsonl"))
-        log.record(event="acl_check", user_id="u1", user_role="child",
-                   allowed=False, details={"device": "geyser"})
-        log.record(event="device_command", user_id="p1", user_role="parent",
-                   allowed=True, details={"device": "light", "action": "on"})
+        log.record(
+            event="acl_check",
+            user_id="u1",
+            user_role="child",
+            allowed=False,
+            details={"device": "geyser"},
+        )
+        log.record(
+            event="device_command",
+            user_id="p1",
+            user_role="parent",
+            allowed=True,
+            details={"device": "light", "action": "on"},
+        )
 
         entries = log.read_recent(10)
         assert len(entries) == 2
@@ -222,6 +235,7 @@ class TestAuditLog:
 # Conversation Logger
 # ──────────────────────────────────────────────
 
+
 @pytest.mark.unit
 class TestConversationLogger:
 
@@ -237,7 +251,7 @@ class TestConversationLogger:
             intent_confidence=0.9,
             response_text="Hello!",
             processing_time_s=0.15,
-            tts_engine="pyttsx3"
+            tts_engine="pyttsx3",
         )
 
         entries = log.get_recent(5)
@@ -250,4 +264,3 @@ class TestConversationLogger:
     def test_get_recent_empty(self, tmp_path: Path) -> None:
         log = ConversationLogger(log_path=str(tmp_path / "empty.jsonl"))
         assert log.get_recent() == []
-

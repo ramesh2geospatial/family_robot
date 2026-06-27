@@ -25,7 +25,9 @@ class MemoryAdminSkill(BaseSkill):
     async def execute(self, ctx: SkillContext) -> SkillResult:
         memory = ctx.ports.get("memory")
         if memory is None:
-            return SkillResult(spoken_response="Memory store is not available.", success=False)
+            return SkillResult(
+                spoken_response="Memory store is not available.", success=False
+            )
 
         action = ctx.slots.get("action", "store")
 
@@ -41,7 +43,7 @@ class MemoryAdminSkill(BaseSkill):
         mem_id = await memory.store(fact, meta=meta)  # type: ignore[union-attr]
         logger.info("Stored memory %s for user %s", mem_id[:8], ctx.user_id)
         return SkillResult(
-            spoken_response=f"Got it! I'll remember that.",
+            spoken_response="Got it! I'll remember that.",
             memory_item=fact,
             memory_meta=meta,
         )
@@ -50,12 +52,16 @@ class MemoryAdminSkill(BaseSkill):
         query = ctx.slots.get("query", ctx.raw_text)
         hits = await memory.search(query, k=3)  # type: ignore[union-attr]
         if not hits:
-            return SkillResult(spoken_response="I don't have anything saved about that.")
+            return SkillResult(
+                spoken_response="I don't have anything saved about that."
+            )
         top = hits[0]
         text = top["text"]
         score = top.get("score", 0)
         if score < 0.3:
-            return SkillResult(spoken_response="I'm not sure, but I found this: " + text)
+            return SkillResult(
+                spoken_response="I'm not sure, but I found this: " + text
+            )
         return SkillResult(spoken_response=text)
 
     async def _forget(self, ctx: SkillContext, memory: object) -> SkillResult:
@@ -68,4 +74,6 @@ class MemoryAdminSkill(BaseSkill):
         deleted = await memory.delete(mem_id)  # type: ignore[union-attr]
         if deleted:
             return SkillResult(spoken_response="Done, I've forgotten that.")
-        return SkillResult(spoken_response="I couldn't remove that memory.", success=False)
+        return SkillResult(
+            spoken_response="I couldn't remove that memory.", success=False
+        )

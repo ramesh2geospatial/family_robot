@@ -1,5 +1,5 @@
-import os
 import json
+import os
 import subprocess
 from pathlib import Path
 
@@ -13,13 +13,13 @@ for p in paths:
     path_obj = Path(p_posix)
     if not path_obj.exists():
         continue
-    
+
     size = path_obj.stat().st_size
-    
+
     # Classify role
     role = "code"
     rationale = "Python source file containing project code."
-    
+
     if p_posix.startswith("tests/"):
         if p_posix.endswith(".gitkeep"):
             role = "fixture"
@@ -27,17 +27,32 @@ for p in paths:
         else:
             role = "test"
             rationale = "Unit, contract, or functional test file."
-    elif p_posix.endswith(".md") or p_posix.startswith("docs/") or p_posix.startswith("prompts/"):
+    elif (
+        p_posix.endswith(".md")
+        or p_posix.startswith("docs/")
+        or p_posix.startswith("prompts/")
+    ):
         if p_posix == "docs/specifications.md":
             role = "formal-spec"
             rationale = "Formal specification document for the FamilyRobot system."
-        elif p_posix in ["AGENTS.md", "BUILD_PROMPT.md", "BUILD_STATE.md", ".agents/skills/familyrobot-dev/SKILL.md"]:
+        elif p_posix in [
+            "AGENTS.md",
+            "BUILD_PROMPT.md",
+            "BUILD_STATE.md",
+            ".agents/skills/familyrobot-dev/SKILL.md",
+        ]:
             role = "skill-prose"
             rationale = "Instruction/prose entry point for the agent."
         else:
             role = "docs"
             rationale = "Documentation markdown file."
-    elif p_posix.endswith(".yaml") or p_posix.endswith(".yml") or p_posix.endswith(".conf") or p_posix == "pyproject.toml" or p_posix.endswith(".json"):
+    elif (
+        p_posix.endswith(".yaml")
+        or p_posix.endswith(".yml")
+        or p_posix.endswith(".conf")
+        or p_posix == "pyproject.toml"
+        or p_posix.endswith(".json")
+    ):
         role = "config"
         rationale = "Configuration file."
     elif p_posix.endswith(".gitkeep"):
@@ -52,13 +67,10 @@ for p in paths:
     elif p_posix.endswith(".ino"):
         role = "code"
         rationale = "Arduino code for hardware verification."
-        
-    files.append({
-        "path": p_posix,
-        "role": role,
-        "size_bytes": size,
-        "rationale": rationale
-    })
+
+    files.append(
+        {"path": p_posix, "role": role, "size_bytes": size, "rationale": rationale}
+    )
 
 role_map = {
     "schema_version": "1.0",
@@ -70,9 +82,9 @@ role_map = {
             "skill_share": 10.0,
             "code_share": 70.0,
             "tool_share": 10.0,
-            "other_share": 10.0
+            "other_share": 10.0,
         }
-    }
+    },
 }
 
 # Create quality directory if not exists

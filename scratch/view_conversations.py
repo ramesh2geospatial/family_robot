@@ -2,6 +2,7 @@ import json
 import os
 from datetime import datetime
 
+
 def format_time(iso_str):
     try:
         # Handle trailing Z or offset for python < 3.11
@@ -12,12 +13,13 @@ def format_time(iso_str):
     except Exception:
         return iso_str
 
+
 def main():
     log_path = "data/conversations.jsonl"
     if not os.path.exists(log_path):
         print("No conversation logs found yet.")
         return
-        
+
     print(f"\n=== RECENT CONVERSATIONS (from {log_path}) ===")
     print("=" * 60)
     with open(log_path, "r", encoding="utf-8") as f:
@@ -38,13 +40,14 @@ def main():
             conf = entry.get("intent_confidence", 0.0)
             resp = entry.get("response_text", "")
             lat = entry.get("processing_time_s", 0.0)
-            
+
             print(f"[{ts}] {user} ({role}) | Audio: {speech_len}s | Lang: {lang}")
-            print(f"  User:   \"{inp}\"")
+            print(f'  User:   "{inp}"')
             print(f"  Intent:  {intent} (conf: {conf})")
-            print(f"  Robot:  \"{resp}\"")
+            print(f'  Robot:  "{resp}"')
             print(f"  Latency: {lat}s | TTS: {entry.get('tts_engine', 'pyttsx3')}")
             print("-" * 60)
+
 
 if __name__ == "__main__":
     main()

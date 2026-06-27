@@ -9,16 +9,16 @@ from unittest.mock import AsyncMock
 import pytest
 
 from packages.core.skills.assistant.skill import AssistantSkill
-from packages.core.skills.base import SkillContext, SkillResult
+from packages.core.skills.base import SkillContext
 from packages.core.skills.lights.skill import LightsSkill
 from packages.core.skills.memory_admin.skill import MemoryAdminSkill
 from packages.core.skills.registry import SkillRegistry
 from packages.core.skills.reminders.skill import RemindersSkill
 
-
 # ──────────────────────────────────────────────
 # Lights Skill
 # ──────────────────────────────────────────────
+
 
 @pytest.mark.unit
 class TestLightsSkill:
@@ -80,6 +80,7 @@ class TestLightsSkill:
 # Reminders Skill
 # ──────────────────────────────────────────────
 
+
 @pytest.mark.unit
 class TestRemindersSkill:
 
@@ -105,7 +106,9 @@ class TestRemindersSkill:
 
     @pytest.mark.asyncio
     async def test_set_then_list(self, skill: RemindersSkill) -> None:
-        await skill.execute(SkillContext(slots={"action": "set", "task": "cook dinner"}))
+        await skill.execute(
+            SkillContext(slots={"action": "set", "task": "cook dinner"})
+        )
         ctx = SkillContext(slots={"action": "list"})
         result = await skill.execute(ctx)
         assert "cook dinner" in result.spoken_response
@@ -128,6 +131,7 @@ class TestRemindersSkill:
 # Memory Admin Skill
 # ──────────────────────────────────────────────
 
+
 @pytest.mark.unit
 class TestMemoryAdminSkill:
 
@@ -139,9 +143,11 @@ class TestMemoryAdminSkill:
     def mock_memory(self) -> AsyncMock:
         mem = AsyncMock()
         mem.store = AsyncMock(return_value="abcd1234-0000")
-        mem.search = AsyncMock(return_value=[
-            {"id": "abcd1234", "text": "Aarav birthday March 5", "score": 0.95}
-        ])
+        mem.search = AsyncMock(
+            return_value=[
+                {"id": "abcd1234", "text": "Aarav birthday March 5", "score": 0.95}
+            ]
+        )
         mem.delete = AsyncMock(return_value=True)
         return mem
 
@@ -197,6 +203,7 @@ class TestMemoryAdminSkill:
 # Assistant Skill
 # ──────────────────────────────────────────────
 
+
 @pytest.mark.unit
 class TestAssistantSkill:
 
@@ -233,6 +240,7 @@ class TestAssistantSkill:
 # ──────────────────────────────────────────────
 # Skill Registry
 # ──────────────────────────────────────────────
+
 
 @pytest.mark.unit
 class TestSkillRegistry:

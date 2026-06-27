@@ -4,17 +4,15 @@ Unit tests for the expression package (ResponseFormatter + TTS engine).
 
 from __future__ import annotations
 
-from unittest.mock import AsyncMock, MagicMock, patch
-
 import pytest
 
 from packages.core.expression.response_formatter import format_response
 from packages.core.expression.tts_engine import PiperTTSEngine
 
-
 # ──────────────────────────────────────────────
 # ResponseFormatter
 # ──────────────────────────────────────────────
+
 
 @pytest.mark.unit
 class TestResponseFormatter:
@@ -81,6 +79,7 @@ class TestResponseFormatter:
 # ──────────────────────────────────────────────
 # PiperTTSEngine
 # ──────────────────────────────────────────────
+
 
 @pytest.mark.unit
 class TestPiperTTSEngine:

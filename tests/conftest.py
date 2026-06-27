@@ -24,5 +24,3 @@ for name in MOCK_MODULES:
         sys.modules[name] = mock_mod
         if name == "openwakeword.model" and "openwakeword" in sys.modules:
             sys.modules["openwakeword"].model = mock_mod
-
-

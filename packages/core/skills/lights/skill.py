@@ -25,7 +25,9 @@ class LightsSkill(BaseSkill):
     async def execute(self, ctx: SkillContext) -> SkillResult:
         home = ctx.ports.get("home")
         if home is None:
-            return SkillResult(spoken_response="Home control is not available.", success=False)
+            return SkillResult(
+                spoken_response="Home control is not available.", success=False
+            )
 
         action = ctx.slots.get("action", "on")
         room = ctx.slots.get("room", "")
@@ -37,13 +39,17 @@ class LightsSkill(BaseSkill):
             try:
                 pct_int = int(pct)
             except (ValueError, TypeError):
-                return SkillResult(spoken_response="I didn't understand the brightness level.")
+                return SkillResult(
+                    spoken_response="I didn't understand the brightness level."
+                )
             ok = await home.set_level(device_id, pct_int)
             if ok:
                 return SkillResult(
                     spoken_response=f"Set the {room + ' ' if room else ''}light to {pct_int} percent."
                 )
-            return SkillResult(spoken_response=f"Failed to dim the {room} light.", success=False)
+            return SkillResult(
+                spoken_response=f"Failed to dim the {room} light.", success=False
+            )
 
         # On/Off
         on = action != "off"

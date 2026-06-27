@@ -114,6 +114,7 @@ def wire_components(
             OpenCVCameraAdapter,
             PyAudioAdapter,
         )
+
         return WiredComponents(
             audio=PyAudioAdapter(),
             camera=OpenCVCameraAdapter(),
@@ -131,6 +132,7 @@ def wire_components(
             TermuxPowerAdapter,
             TermuxTelephonyAdapter,
         )
+
         return WiredComponents(
             audio=TermuxAudioAdapter(),
             camera=TermuxCameraAdapter(),
@@ -148,6 +150,7 @@ def wire_components(
             PiPowerAdapter,
             PiTelephonyAdapter,
         )
+
         return WiredComponents(
             audio=AlsaAudioAdapter(),
             camera=PiCameraAdapter(),
@@ -166,4 +169,3 @@ def wire_components(
         notify=MockNotifyAdapter(),
         telephony=MockTelephonyAdapter(),
     )
-

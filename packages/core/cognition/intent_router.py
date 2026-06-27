@@ -17,11 +17,19 @@ logger = logging.getLogger(__name__)
 
 # ---- LLM port protocol (for optional fallback) ----
 class _LLMProtocol(Protocol):
-    async def generate(self, prompt: str, *, system: str = "", max_tokens: int = 512,
-                       temperature: float = 0.7, stop: list[str] | None = None) -> str: ...
+    async def generate(
+        self,
+        prompt: str,
+        *,
+        system: str = "",
+        max_tokens: int = 512,
+        temperature: float = 0.7,
+        stop: list[str] | None = None,
+    ) -> str: ...
 
 
 # ---- Data structures ----
+
 
 @dataclass
 class Intent:
@@ -35,24 +43,49 @@ class Intent:
 # ---- Keyword rules ----
 
 _HOME_KEYWORDS = [
-    "turn on", "turn off", "switch on", "switch off",
-    "geyser", "light", "fan", "ac", "pump", "heater",
-    "washer", "washing machine", "lamp",
+    "turn on",
+    "turn off",
+    "switch on",
+    "switch off",
+    "geyser",
+    "light",
+    "fan",
+    "ac",
+    "pump",
+    "heater",
+    "washer",
+    "washing machine",
+    "lamp",
 ]
 _MEMORY_STORE_KEYWORDS = [
-    "remember that", "remember this", "save this", "note that",
-    "don't forget", "keep in mind",
+    "remember that",
+    "remember this",
+    "save this",
+    "note that",
+    "don't forget",
+    "keep in mind",
 ]
 _MEMORY_RECALL_KEYWORDS = [
-    "when is", "what is", "do you remember", "recall",
-    "what did", "tell me about", "who is",
+    "when is",
+    "what is",
+    "do you remember",
+    "recall",
+    "what did",
+    "tell me about",
+    "who is",
 ]
 _TIMER_KEYWORDS = [
-    "set timer", "set a timer", "remind me in", "alarm in",
-    "start a timer", "countdown",
+    "set timer",
+    "set a timer",
+    "remind me in",
+    "alarm in",
+    "start a timer",
+    "countdown",
 ]
 _REMINDER_KEYWORDS = [
-    "remind me to", "reminder for", "set a reminder",
+    "remind me to",
+    "reminder for",
+    "set a reminder",
     "set reminder",
 ]
 _CALLS_KEYWORDS = ["call ", "phone ", "dial "]
@@ -60,8 +93,17 @@ _SECURITY_KEYWORDS = ["security check", "check security", "anyone outside"]
 _SENSORS_KEYWORDS = ["sensor status", "door status", "doors locked"]
 
 _DEVICE_NAMES = [
-    "geyser", "light", "fan", "ac", "pump", "heater",
-    "washer", "washing machine", "lamp", "tv", "television",
+    "geyser",
+    "light",
+    "fan",
+    "ac",
+    "pump",
+    "heater",
+    "washer",
+    "washing machine",
+    "lamp",
+    "tv",
+    "television",
 ]
 
 
@@ -81,9 +123,7 @@ def _extract_on_off(text: str) -> Optional[bool]:
     return None
 
 
-_DURATION_RE = re.compile(
-    r"(\d+)\s*(second|sec|minute|min|hour|hr)s?", re.IGNORECASE
-)
+_DURATION_RE = re.compile(r"(\d+)\s*(second|sec|minute|min|hour|hr)s?", re.IGNORECASE)
 
 
 def _extract_duration(text: str) -> Optional[dict]:
@@ -118,8 +158,10 @@ class IntentRouter:
         # Order matters: more specific intents first
         for kw in _CALLS_KEYWORDS:
             if kw in lower:
-                contact = text[lower.index(kw) + len(kw):].strip().rstrip("?.!")
-                return Intent(name="calls", confidence=0.9, entities={"contact": contact})
+                contact = text[lower.index(kw) + len(kw) :].strip().rstrip("?.!")
+                return Intent(
+                    name="calls", confidence=0.9, entities={"contact": contact}
+                )
 
         for kw in _SECURITY_KEYWORDS:
             if kw in lower:
@@ -158,9 +200,7 @@ class IntentRouter:
                     entities["devices"] = devices
                 if on_off is not None:
                     entities["action"] = "on" if on_off else "off"
-                return Intent(
-                    name="home_control", confidence=0.9, entities=entities
-                )
+                return Intent(name="home_control", confidence=0.9, entities=entities)
 
         return None
 
@@ -171,7 +211,9 @@ class IntentRouter:
 
         rule_match = self._match_keywords(text)
         if rule_match:
-            logger.debug("Rule match: %s (%.2f)", rule_match.name, rule_match.confidence)
+            logger.debug(
+                "Rule match: %s (%.2f)", rule_match.name, rule_match.confidence
+            )
             return rule_match
 
         # Optional LLM fallback
@@ -194,8 +236,17 @@ class IntentRouter:
             text, system=system, max_tokens=20, temperature=0.1
         )
         intent_name = result.strip().lower().replace(" ", "_")
-        valid = {"home_control", "memory_store", "memory_recall",
-                 "timer", "reminder", "calls", "security", "sensors", "general_chat"}
+        valid = {
+            "home_control",
+            "memory_store",
+            "memory_recall",
+            "timer",
+            "reminder",
+            "calls",
+            "security",
+            "sensors",
+            "general_chat",
+        }
         if intent_name not in valid:
             intent_name = "general_chat"
         return Intent(name=intent_name, confidence=0.7, entities={})

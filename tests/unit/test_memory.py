@@ -4,9 +4,6 @@ Unit tests for the memory store.
 
 from __future__ import annotations
 
-import asyncio
-import json
-import struct
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
@@ -15,10 +12,10 @@ import pytest
 
 from packages.core.memory.memory_store import MemoryStore, _cosine_similarity
 
-
 # ──────────────────────────────────────────────
 # Helper: deterministic mock embedder
 # ──────────────────────────────────────────────
+
 
 def _make_mock_embedder():
     """Return a mock SentenceTransformer that produces deterministic 4-d vectors."""
@@ -29,7 +26,9 @@ def _make_mock_embedder():
         _call_count["n"] += 1
         # Simple hash-based deterministic embedding
         h = hash(text) % 10000
-        vec = np.array([h / 10000, (h % 100) / 100, (h % 10) / 10, 0.5], dtype=np.float32)
+        vec = np.array(
+            [h / 10000, (h % 100) / 100, (h % 10) / 10, 0.5], dtype=np.float32
+        )
         # Normalise
         norm = np.linalg.norm(vec)
         if norm > 0:
@@ -43,6 +42,7 @@ def _make_mock_embedder():
 # ──────────────────────────────────────────────
 # Tests
 # ──────────────────────────────────────────────
+
 
 @pytest.mark.unit
 class TestCosine:
@@ -109,6 +109,7 @@ class TestMemoryStore:
     @pytest.mark.asyncio
     async def test_store_with_metadata(self, store: MemoryStore) -> None:
         mid = await store.store("test", meta={"source": "voice", "user": "aarav"})
+        assert mid is not None
         results = await store.search("test", k=1)
         assert results[0]["meta"]["source"] == "voice"
 
@@ -123,7 +124,7 @@ class TestMemoryStore:
     @pytest.mark.asyncio
     async def test_encrypted_database_connection(self, tmp_path: Path) -> None:
         import os
-        from unittest.mock import MagicMock, patch
+        from unittest.mock import MagicMock
 
         db = str(tmp_path / "encrypted.db")
         mock_conn = MagicMock()

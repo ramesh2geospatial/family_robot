@@ -155,4 +155,3 @@ def test_vad_detector_events():
         vad = VoiceActivityDetector()
         res = vad.process_chunk(b"\x00" * 1024)
         assert res == {"start": 16000}
-

@@ -1,7 +1,9 @@
 import logging
+
 from packages.core.skills.base import BaseSkill, SkillContext, SkillResult
 
 logger = logging.getLogger(__name__)
+
 
 class CallsSkill(BaseSkill):
     """
@@ -19,7 +21,9 @@ class CallsSkill(BaseSkill):
     async def execute(self, ctx: SkillContext) -> SkillResult:
         contact_name = ctx.slots.get("contact", "")
         if not contact_name:
-            return SkillResult(spoken_response="Who would you like to call?", success=False)
+            return SkillResult(
+                spoken_response="Who would you like to call?", success=False
+            )
 
         # Retrieve identity store and look up contact
         identity_store = ctx.ports.get("identity_store")
@@ -31,15 +35,19 @@ class CallsSkill(BaseSkill):
                     break
 
         if not target_member:
-            logger.warning(f"Call request blocked: '{contact_name}' is not in the family whitelist.")
+            logger.warning(
+                f"Call request blocked: '{contact_name}' is not in the family whitelist."
+            )
             return SkillResult(
                 spoken_response=f"Sorry, for safety reasons I can only call enrolled family members. {contact_name} is not enrolled.",
-                success=False
+                success=False,
             )
 
         telephony = ctx.ports.get("telephony")
         if not telephony:
-            return SkillResult(spoken_response="Telephony service is not available.", success=False)
+            return SkillResult(
+                spoken_response="Telephony service is not available.", success=False
+            )
 
         phone_number = getattr(target_member, "phone_number", "+919876543210")
         ok = await telephony.make_call(phone_number)
@@ -47,10 +55,10 @@ class CallsSkill(BaseSkill):
             return SkillResult(
                 spoken_response=f"Sure, calling {target_member.name} now.",
                 success=True,
-                memory_item=f"Initiated voice call to {target_member.name}."
+                memory_item=f"Initiated voice call to {target_member.name}.",
             )
         else:
             return SkillResult(
                 spoken_response=f"Sorry, I failed to initiate the call to {target_member.name}.",
-                success=False
+                success=False,
             )

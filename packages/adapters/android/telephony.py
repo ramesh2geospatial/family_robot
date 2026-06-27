@@ -5,9 +5,11 @@ Termux telephony adapter for Android.
 import logging
 import shutil
 import subprocess
+
 from packages.core.ports.telephony import TelephonyPort
 
 logger = logging.getLogger(__name__)
+
 
 class TermuxTelephonyAdapter(TelephonyPort):
     """
@@ -16,7 +18,9 @@ class TermuxTelephonyAdapter(TelephonyPort):
 
     async def make_call(self, phone_number: str) -> bool:
         if not shutil.which("termux-telephony-call"):
-            logger.info(f"[Telephony Mock] No termux-telephony-call CLI; logging call to {phone_number}")
+            logger.info(
+                f"[Telephony Mock] No termux-telephony-call CLI; logging call to {phone_number}"
+            )
             return True
         try:
             # Invokes native Android dialer via Termux
@@ -35,7 +39,9 @@ class TermuxTelephonyAdapter(TelephonyPort):
                 logger.info(f"Opened WhatsApp link via termux-open: {phone_number}")
                 return True
             else:
-                logger.info(f"[Telephony Mock] No termux-open; WhatsApp simulation link: {url}")
+                logger.info(
+                    f"[Telephony Mock] No termux-open; WhatsApp simulation link: {url}"
+                )
                 return True
         except Exception as e:
             logger.error(f"Failed to open WhatsApp: {e}")

@@ -55,8 +55,6 @@ class AppConfig(BaseModel):
     home_devices: Dict[str, SmartDeviceConfig] = Field(default_factory=dict)
 
 
-
-
 def load_yaml(path: Path) -> Dict[str, Any]:
     if not path.exists():
         return {}
