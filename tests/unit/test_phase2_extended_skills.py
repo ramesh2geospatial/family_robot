@@ -12,6 +12,7 @@ from packages.core.governance.identity import FamilyMember, Role
 from packages.core.skills.base import SkillContext
 from packages.core.skills.cooking.skill import CookingSkill
 from packages.core.skills.dance.skill import DanceSkill
+from packages.core.skills.enroll.skill import EnrollSkill
 from packages.core.skills.fan.skill import FanSkill
 from packages.core.skills.homework.skill import HomeworkSkill
 from packages.core.skills.music.skill import MusicSkill
@@ -89,6 +90,15 @@ class TestExtendedIntentParsing:
         intent2 = await router.classify("dance to Vande Mataram")
         assert intent2.name == "dance"
         assert intent2.entities.get("song") == "Vande Mataram"
+
+    @pytest.mark.asyncio
+    async def test_enroll_intent(self) -> None:
+        router = IntentRouter()
+        intent = await router.classify("enroll family member")
+        assert intent.name == "enroll"
+
+        intent2 = await router.classify("register user")
+        assert intent2.name == "enroll"
 
 
 # ──────────────────────────────────────────────
@@ -206,3 +216,11 @@ class TestExtendedSkills:
         mock_camera.open.assert_called_once()
         mock_camera.capture.assert_called_once()
         mock_camera.close.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_enroll_skill(self) -> None:
+        skill = EnrollSkill()
+        ctx = SkillContext(slots={}, ports={})
+        result = await skill.execute(ctx)
+        assert result.success is True
+        assert "Companion web app" in result.spoken_response

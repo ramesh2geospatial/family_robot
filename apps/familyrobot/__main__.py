@@ -96,6 +96,7 @@ def _build_components(config: AppConfig) -> dict:
         CallsSkill,
         CookingSkill,
         DanceSkill,
+        EnrollSkill,
         FanSkill,
         GeyserSkill,
         HomeworkSkill,
@@ -116,6 +117,7 @@ def _build_components(config: AppConfig) -> dict:
     skill_registry.register(RemindersSkill(), ["timer", "reminder"])
     skill_registry.register(MemoryAdminSkill(), ["memory_store", "memory_recall"])
     skill_registry.register(AssistantSkill(), ["general_chat"])
+    skill_registry.register(EnrollSkill(), ["enroll"])
 
     # Phase 2 appliance skills
     skill_registry.register(AcSkill(), ["control_ac"])

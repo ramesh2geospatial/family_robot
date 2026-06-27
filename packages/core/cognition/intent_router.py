@@ -99,6 +99,7 @@ _MUSIC_KEYWORDS = ["play ", "pause music", "stop music", "next song", "music", "
 _COOKING_KEYWORDS = ["recipe", "cook", "convert", "step", "pudhchi", "pudhe"]
 _HOMEWORK_KEYWORDS = ["explain", "solve", "quiz", "question about"]
 _DANCE_KEYWORDS = ["dance", "nacho", "nachne", "डान्स", "नाच"]
+_ENROLL_KEYWORDS = ["enroll", "register", "new user", "add user", "नवीन युझर"]
 
 _DEVICE_NAMES = [
     "geyser",
@@ -350,6 +351,10 @@ class IntentRouter:
                         break
                 return Intent(name="dance", confidence=0.9, entities={"song": song})
 
+        for kw in _ENROLL_KEYWORDS:
+            if kw in lower:
+                return Intent(name="enroll", confidence=0.9, entities={})
+
         for kw in _HOME_KEYWORDS:
             if kw in lower:
                 devices = _extract_devices(text)
@@ -436,8 +441,8 @@ class IntentRouter:
             "You are an intent classifier. Classify the user message into exactly "
             "one of: home_control, control_ac, control_tv, control_geyser, "
             "control_pump, control_washer, control_fan, play_music, cooking, "
-            "homework, dance, memory_store, memory_recall, timer, reminder, "
-            "calls, security, sensors, general_chat. "
+            "homework, dance, enroll, memory_store, memory_recall, timer, "
+            "reminder, calls, security, sensors, general_chat. "
             "Respond with ONLY the intent name, nothing else."
         )
         result = await self._llm.generate(  # type: ignore[union-attr]
@@ -456,6 +461,7 @@ class IntentRouter:
             "cooking",
             "homework",
             "dance",
+            "enroll",
             "memory_store",
             "memory_recall",
             "timer",

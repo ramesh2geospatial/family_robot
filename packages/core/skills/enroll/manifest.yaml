@@ -1,0 +1,12 @@
+name: enroll
+languages: [en, hi, mr]
+intents:
+  - id: enroll.member
+    utterances:
+      en: ["enroll family member", "add new family member", "register user", "enroll me", "add new user"]
+      hi: ["naya user chalu karo", "naya family member register karo"]
+      mr: ["नवीन युझर जोडा"]
+required_permissions: [general_info]
+hardware_deps: []
+offline_capable: true
+entry_points: {execute: "skill:execute"}

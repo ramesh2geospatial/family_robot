@@ -8,6 +8,7 @@ from packages.core.skills.base import BaseSkill, SkillContext, SkillResult
 from packages.core.skills.calls.skill import CallsSkill
 from packages.core.skills.cooking.skill import CookingSkill
 from packages.core.skills.dance.skill import DanceSkill
+from packages.core.skills.enroll.skill import EnrollSkill
 from packages.core.skills.fan.skill import FanSkill
 from packages.core.skills.geyser.skill import GeyserSkill
 from packages.core.skills.homework.skill import HomeworkSkill
@@ -33,6 +34,7 @@ __all__ = [
     "SensorsSkill",
     "AcSkill",
     "DanceSkill",
+    "EnrollSkill",
     "GeyserSkill",
     "PumpSkill",
     "WasherSkill",
