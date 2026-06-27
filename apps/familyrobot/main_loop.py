@@ -13,6 +13,9 @@ import time
 from packages.core.expression.response_formatter import format_response
 from packages.core.governance import ACL, UNKNOWN_USER, AuditLog, IdentityStore
 
+import re
+from unittest.mock import Mock
+
 logger = logging.getLogger(__name__)
 
 _WAKE_THRESHOLD = 0.5
@@ -134,75 +137,94 @@ async def _listen_cycle(
 
     logger.info("Wake word detected (score=%.2f). Listening…", score)
 
-    # 2. VAD → accumulate speech frames
+    # Acoustic Barge-in: Pause media player if music is playing
+    paused_for_voice = False
+    media_player = ports.get("media_player")
+    if media_player:
+        is_playing = False
+        if hasattr(media_player, "is_playing"):
+            if not isinstance(media_player.is_playing, Mock):
+                is_playing = media_player.is_playing()
+            else:
+                ret = media_player.is_playing.return_value
+                is_playing = ret if isinstance(ret, bool) else False
+        if is_playing:
+            logger.info("[MainLoop] Pausing music for voice interaction.")
+            await media_player.pause()
+            paused_for_voice = True
+
+    intent = None
+    lang = "en"
     speech_frames: list[bytes] = []
-    listening = True
-    vad.reset() if hasattr(vad, "reset") else None
 
-    while listening and not shutdown_event.is_set():
-        chunk = await audio.read_frame()
-        result = await asyncio.to_thread(vad.process_chunk, chunk)
-        speech_frames.append(chunk)
-
-        if result and "end" in result:
-            listening = False
-        # Safety: stop after ~15 s of speech (240 frames × 64 ms ≈ 15 s)
-        if len(speech_frames) > 240:
-            logger.warning("Speech too long; forcing STT.")
-            listening = False
-
-    if not speech_frames:
-        return
-
-    # 3. Transcribe
-    start_time = time.perf_counter()
-    all_audio = b"".join(speech_frames)
     try:
-        text, lang = await asyncio.to_thread(stt.transcribe, all_audio)
-    except Exception as exc:
-        logger.error("STT failed: %s", exc)
-        await _speak(tts, audio, _FALLBACK_MSG)
-        if conversation_logger:
-            processing_time = time.perf_counter() - start_time
-            conversation_logger.log_interaction(
-                raw_text="<STT_FAILED>",
-                response_text=_FALLBACK_MSG,
-                processing_time_s=processing_time,
-                audio_duration_s=len(speech_frames) * 0.1,
-                tts_engine="piper" if getattr(tts, "_use_piper", False) else "pyttsx3",
-            )
-        return
+        # 2. VAD → accumulate speech frames
+        listening = True
+        vad.reset() if hasattr(vad, "reset") else None
 
-    if not text or not text.strip():
-        logger.info("Empty transcription, ignoring.")
-        if conversation_logger:
-            processing_time = time.perf_counter() - start_time
-            conversation_logger.log_interaction(
-                detected_language=lang,
-                raw_text="<EMPTY>",
-                response_text="",
-                processing_time_s=processing_time,
-                audio_duration_s=len(speech_frames) * 0.1,
-                tts_engine="none",
-            )
-        return
+        while listening and not shutdown_event.is_set():
+            chunk = await audio.read_frame()
+            result = await asyncio.to_thread(vad.process_chunk, chunk)
+            speech_frames.append(chunk)
 
-    logger.info("Transcribed: '%s' [%s]", text, lang)
+            if result and "end" in result:
+                listening = False
+            # Safety: stop after ~15 s of speech (240 frames × 64 ms ≈ 15 s)
+            if len(speech_frames) > 240:
+                logger.warning("Speech too long; forcing STT.")
+                listening = False
 
-    # Identify user (support prefix override, e.g. "Ramesh: turn on geyser")
-    user = UNKNOWN_USER
-    clean_text = text
-    if ":" in text:
-        parts = text.split(":", 1)
-        prefix = parts[0].strip()
-        for member in identity_store.list_members():
-            if member.name.lower() == prefix.lower():
-                user = member
-                clean_text = parts[1].strip()
-                break
+        if not speech_frames:
+            return
 
-    # 4-7. Intent → action → format → speak
-    try:
+        # 3. Transcribe
+        start_time = time.perf_counter()
+        all_audio = b"".join(speech_frames)
+        try:
+            text, lang = await asyncio.to_thread(stt.transcribe, all_audio)
+        except Exception as exc:
+            logger.error("STT failed: %s", exc)
+            await _speak(tts, audio, _FALLBACK_MSG)
+            if conversation_logger:
+                processing_time = time.perf_counter() - start_time
+                conversation_logger.log_interaction(
+                    raw_text="<STT_FAILED>",
+                    response_text=_FALLBACK_MSG,
+                    processing_time_s=processing_time,
+                    audio_duration_s=len(speech_frames) * 0.1,
+                    tts_engine="piper" if getattr(tts, "_use_piper", False) else "pyttsx3",
+                )
+            return
+
+        if not text or not text.strip():
+            logger.info("Empty transcription, ignoring.")
+            if conversation_logger:
+                processing_time = time.perf_counter() - start_time
+                conversation_logger.log_interaction(
+                    detected_language=lang,
+                    raw_text="<EMPTY>",
+                    response_text="",
+                    processing_time_s=processing_time,
+                    audio_duration_s=len(speech_frames) * 0.1,
+                    tts_engine="none",
+                )
+            return
+
+        logger.info("Transcribed: '%s' [%s]", text, lang)
+
+        # Identify user (support prefix override, e.g. "Ramesh: turn on geyser")
+        user = UNKNOWN_USER
+        clean_text = text
+        if ":" in text:
+            parts = text.split(":", 1)
+            prefix = parts[0].strip()
+            for member in identity_store.list_members():
+                if member.name.lower() == prefix.lower():
+                    user = member
+                    clean_text = parts[1].strip()
+                    break
+
+        # 4-7. Intent → action → format → speak
         intent = await intent_router.classify(clean_text)
         logger.info(
             "Intent: %s (%.2f) entities=%s",
@@ -233,31 +255,69 @@ async def _listen_cycle(
                 skill_registry=skill_registry,
                 ports=ports,
                 user=user,
+                language=lang,
             )
             response = format_response(raw_response, intent.name)
+
+            # Dynamic Localisation Layer: Translate English skill responses if user spoke Hindi/Marathi
+            if lang in ("hi", "mr") and response:
+                if not bool(re.search(r"[\u0900-\u097F]", response)):
+                    target_lang = "Hindi" if lang == "hi" else "Marathi"
+                    try:
+                        logger.info("Translating response to %s: '%s'", target_lang, response)
+                        translated = await llm.generate(
+                            prompt=f"Translate the following phrase to {target_lang}: {response}",
+                            system=(
+                                "You are a professional translator. Respond ONLY with the "
+                                "translated text (using Devanagari script), no explanation, quotes, or extra text."
+                            ),
+                            temperature=0.1
+                        )
+                        if translated and not translated.startswith("I'm sorry"):
+                            response = translated.strip()
+                    except Exception as exc:
+                        logger.warning("Translation of response failed: %s", exc)
+
+        logger.info("Robot response: %s", response)
+        await _speak(tts, audio, response)
+
+        if conversation_logger:
+            processing_time = time.perf_counter() - start_time
+            conversation_logger.log_interaction(
+                detected_language=lang,
+                raw_text=text,
+                intent=intent.name,
+                intent_confidence=intent.confidence,
+                response_text=response,
+                processing_time_s=processing_time,
+                audio_duration_s=len(speech_frames) * 0.1,
+                tts_engine="piper" if getattr(tts, "_use_piper", False) else "pyttsx3",
+            )
     except Exception as exc:
         logger.error("Processing failed: %s", exc, exc_info=True)
         response = _FALLBACK_MSG
-
-    logger.info("Robot response: %s", response)
-    await _speak(tts, audio, response)
-
-    if conversation_logger:
-        processing_time = time.perf_counter() - start_time
-        conversation_logger.log_interaction(
-            detected_language=lang,
-            raw_text=text,
-            intent=intent.name if "intent" in locals() else "unknown",
-            intent_confidence=intent.confidence if "intent" in locals() else 0.0,
-            response_text=response,
-            processing_time_s=processing_time,
-            audio_duration_s=len(speech_frames) * 0.1,
-            tts_engine="piper" if getattr(tts, "_use_piper", False) else "pyttsx3",
-        )
+        await _speak(tts, audio, response)
+    finally:
+        # Acoustic Barge-in: Resume music if we paused it and the intent was NOT play_music
+        if paused_for_voice and media_player:
+            intent_name = intent.name if intent else None
+            if intent_name == "play_music":
+                logger.info("[MainLoop] Keeping music state from play_music intent.")
+            else:
+                logger.info("[MainLoop] Resuming music playback.")
+                await media_player.resume()
 
 
 async def _handle_intent(
-    intent, text: str, home, llm, memory, skill_registry=None, ports=None, user=None
+    intent,
+    text: str,
+    home,
+    llm,
+    memory,
+    skill_registry=None,
+    ports=None,
+    user=None,
+    language: str = "en",
 ) -> str:
     """Route intent to the appropriate handler and return raw text."""
 
@@ -270,7 +330,7 @@ async def _handle_intent(
                 user_id=user.user_id if user else "unknown",
                 user_role=user.role.value if user else "guest",
                 user_name=user.name if user else "Someone",
-                language="en",
+                language=language,
                 raw_text=text,
                 slots=intent.entities,
                 ports=ports or {},
@@ -312,10 +372,16 @@ async def _handle_intent(
     if intent.name in ("timer", "reminder"):
         return "I've noted that. Timer and reminder support is coming soon."
 
-    # general_chat fallback
+    # general_chat fallback (dynamically constrained by language)
+    lang_inst = "Respond ONLY in English."
+    if language == "hi":
+        lang_inst = "Respond ONLY in Hindi (using Devanagari script)."
+    elif language == "mr":
+        lang_inst = "Respond ONLY in Marathi (using Devanagari script)."
+
     system = (
         "You are FamilyRobot, a helpful family assistant for an Indian household. "
-        "Keep answers concise, warm, and family-friendly."
+        f"Keep answers concise, warm, and family-friendly. {lang_inst}"
     )
     return await llm.generate(text, system=system)
 
@@ -327,3 +393,4 @@ async def _speak(tts, audio, text: str) -> None:
         await audio.play(pcm, sr)
     except Exception as exc:
         logger.error("TTS/play failed: %s", exc)
+
