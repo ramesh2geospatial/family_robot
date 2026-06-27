@@ -95,6 +95,7 @@ def _build_components(config: AppConfig) -> dict:
         AssistantSkill,
         CallsSkill,
         CookingSkill,
+        DanceSkill,
         FanSkill,
         GeyserSkill,
         HomeworkSkill,
@@ -128,6 +129,7 @@ def _build_components(config: AppConfig) -> dict:
     skill_registry.register(MusicSkill(), ["play_music"])
     skill_registry.register(CookingSkill(), ["cooking"])
     skill_registry.register(HomeworkSkill(), ["homework"])
+    skill_registry.register(DanceSkill(), ["dance"])
 
     # Phase 3 skills
     sensors_skill = SensorsSkill()

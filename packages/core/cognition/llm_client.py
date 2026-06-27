@@ -72,8 +72,26 @@ class LlamaLLMClient:
         Satisfies the ``LLMPort`` protocol.
         """
         await self._ensure_loaded()
-        full_prompt = self._build_prompt(prompt, system)
-        stop_sequences = stop or ["<|im_end|>"]
+
+        messages = []
+        if system:
+            messages.append({"role": "system", "content": system})
+
+        # Parse history formatted as 'USER: ...' / 'ASSISTANT: ...'
+        if "USER:" in prompt or "ASSISTANT:" in prompt:
+            lines = prompt.strip().split("\n")
+            for line in lines:
+                if line.startswith("USER:"):
+                    messages.append({"role": "user", "content": line[5:].strip()})
+                elif line.startswith("ASSISTANT:"):
+                    messages.append({"role": "assistant", "content": line[10:].strip()})
+                else:
+                    if messages:
+                        messages[-1]["content"] += "\n" + line.strip()
+                    else:
+                        messages.append({"role": "user", "content": line.strip()})
+        else:
+            messages.append({"role": "user", "content": prompt})
 
         import time
 
@@ -84,13 +102,13 @@ class LlamaLLMClient:
 
         try:
             result = await asyncio.to_thread(
-                self._llama.create_completion,  # type: ignore[union-attr]
-                prompt=full_prompt,
+                self._llama.create_chat_completion,  # type: ignore[union-attr]
+                messages=messages,
                 max_tokens=max_tokens,
                 temperature=temperature,
-                stop=stop_sequences,
+                stop=stop,
             )
-            text: str = result["choices"][0]["text"].strip()  # type: ignore[index]
+            text: str = result["choices"][0]["message"]["content"].strip()
             duration = time.perf_counter() - start_time
             logger.info("Local LLM generation complete in %.2fs.", duration)
             return text

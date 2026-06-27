@@ -1,0 +1,14 @@
+name: dance
+languages: [en, hi, mr]
+intents:
+  - id: dance.start
+    utterances:
+      en: ["start dance mode", "let's dance", "dance with me", "play a dance song"]
+      hi: ["dance chalu karo", "mere sath nacho", "nachne ka gana bajao"]
+      mr: ["डान्स सुरू कर", "माझ्यासोबत नाच"]
+    slots:
+      song: {type: text, required: false}
+required_permissions: [play_music]
+hardware_deps: [camera]
+offline_capable: true
+entry_points: {execute: "skill:execute"}

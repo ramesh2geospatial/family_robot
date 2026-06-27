@@ -98,6 +98,7 @@ _SENSORS_KEYWORDS = ["sensor status", "door status", "doors locked"]
 _MUSIC_KEYWORDS = ["play ", "pause music", "stop music", "next song", "music", "gana"]
 _COOKING_KEYWORDS = ["recipe", "cook", "convert", "step", "pudhchi", "pudhe"]
 _HOMEWORK_KEYWORDS = ["explain", "solve", "quiz", "question about"]
+_DANCE_KEYWORDS = ["dance", "nacho", "nachne", "डान्स", "नाच"]
 
 _DEVICE_NAMES = [
     "geyser",
@@ -335,6 +336,20 @@ class IntentRouter:
                     exp["intent_id"] = "homework.explain"
                     return Intent(name="homework", confidence=0.9, entities=exp)
 
+        for kw in _DANCE_KEYWORDS:
+            if kw in lower:
+                # Extract optional song name
+                song = ""
+                for prefix in ("play ", "dance to ", "nacho "):
+                    if prefix in lower:
+                        song = (
+                            text[lower.index(prefix) + len(prefix) :]
+                            .strip()
+                            .rstrip("?.!")
+                        )
+                        break
+                return Intent(name="dance", confidence=0.9, entities={"song": song})
+
         for kw in _HOME_KEYWORDS:
             if kw in lower:
                 devices = _extract_devices(text)
@@ -419,9 +434,10 @@ class IntentRouter:
         """Use LLM to classify when rules don't match."""
         system = (
             "You are an intent classifier. Classify the user message into exactly "
-            "one of: home_control, control_ac, control_tv, control_geyser, control_pump, "
-            "control_washer, control_fan, play_music, cooking, homework, memory_store, "
-            "memory_recall, timer, reminder, calls, security, sensors, general_chat. "
+            "one of: home_control, control_ac, control_tv, control_geyser, "
+            "control_pump, control_washer, control_fan, play_music, cooking, "
+            "homework, dance, memory_store, memory_recall, timer, reminder, "
+            "calls, security, sensors, general_chat. "
             "Respond with ONLY the intent name, nothing else."
         )
         result = await self._llm.generate(  # type: ignore[union-attr]
@@ -439,6 +455,7 @@ class IntentRouter:
             "play_music",
             "cooking",
             "homework",
+            "dance",
             "memory_store",
             "memory_recall",
             "timer",

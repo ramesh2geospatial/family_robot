@@ -11,6 +11,7 @@ from packages.core.governance.acl import ACL
 from packages.core.governance.identity import FamilyMember, Role
 from packages.core.skills.base import SkillContext
 from packages.core.skills.cooking.skill import CookingSkill
+from packages.core.skills.dance.skill import DanceSkill
 from packages.core.skills.fan.skill import FanSkill
 from packages.core.skills.homework.skill import HomeworkSkill
 from packages.core.skills.music.skill import MusicSkill
@@ -78,6 +79,16 @@ class TestExtendedIntentParsing:
         assert intent3.name == "homework"
         assert intent3.entities.get("intent_id") == "homework.quiz"
         assert intent3.entities.get("topic") == "biology"
+
+    @pytest.mark.asyncio
+    async def test_dance_intent(self) -> None:
+        router = IntentRouter()
+        intent = await router.classify("start dance mode")
+        assert intent.name == "dance"
+
+        intent2 = await router.classify("dance to Vande Mataram")
+        assert intent2.name == "dance"
+        assert intent2.entities.get("song") == "Vande Mataram"
 
 
 # ──────────────────────────────────────────────
@@ -175,3 +186,23 @@ class TestExtendedSkills:
         result = await skill.execute(ctx)
         assert result.success is True
         assert "Gravity pulls" in result.spoken_response
+
+    @pytest.mark.asyncio
+    async def test_dance_skill(self) -> None:
+        mock_camera = AsyncMock()
+        mock_camera.open = AsyncMock()
+        mock_camera.capture = AsyncMock(return_value=b"frame_bytes")
+        mock_camera.close = AsyncMock()
+
+        skill = DanceSkill()
+        ctx = SkillContext(
+            slots={"song": "Macarena"},
+            ports={"camera": mock_camera},
+        )
+        result = await skill.execute(ctx)
+        assert result.success is True
+        assert "Macarena" in result.spoken_response
+        assert "score" in result.spoken_response
+        mock_camera.open.assert_called_once()
+        mock_camera.capture.assert_called_once()
+        mock_camera.close.assert_called_once()
