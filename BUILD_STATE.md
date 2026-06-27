@@ -7,30 +7,30 @@ Resume rule: read this file first, find the first 'in_progress'/'pending' step, 
 - **Stage**: Phase 2/3 Complete
 - **Active step**: 16
 - **Status**: done
-- **Next action**: complete
+- **Next action**: none (all phases complete)
 - **Repo green**: yes
-- **Last commit**: c36622e
+- **Last commit**: 251fc69
 
 ## STEP TRACKER
 | # | Stage | Step | Status | Tests | Commit |
 |---|---|---|---|---|---|
 | 0 | D0 | Build harness (tests, ledger, lint) | done | smoke tests passed | a8cfbb2 |
-| 1 | D1 | Project skeleton | done | cli help passes | a05ecc8 |
-| 2 | D1 | Ports + config + wiring | done | unit tests passed | 577af91 |
+| 1 | D1 | Project skeleton | done | cli help passes | d2bc4df |
+| 2 | D1 | Ports + config + wiring | done | unit tests passed | 099836f |
 | 3 | D1 | Desktop adapters | done | contract tests passed | 3e2091d |
-| 4 | D1 | Perception (wake/STT/VAD) | done | unit tests passed | b1012d9 |
-| 5 | D1 | Cognition + memory | done | 52 unit tests passed | (pending) |
-| 6 | D1 | Expression + loop | done | 52 unit tests passed | (pending) |
-| 7 | D1 | Governance (identity/ACL) | done | 29 unit tests passed | (pending) |
-| 8 | D1 | First skills | done | 21 unit tests passed | (pending) |
-| 9 | D1 | Companion PWA | done | 13 unit tests passed | (pending) |
-| 10 | D1 | Dockerize (dev) | done | Dockerfile + compose created | (pending) |
+| 4 | D1 | Perception (wake/STT/VAD) | done | unit tests passed | 147c70f |
+| 5 | D1 | Cognition + memory | done | 52 unit tests passed | 88d234d |
+| 6 | D1 | Expression + loop | done | 52 unit tests passed | 88d234d |
+| 7 | D1 | Governance (identity/ACL) | done | 29 unit tests passed | f03bcc0 |
+| 8 | D1 | First skills | done | 21 unit tests passed | f03bcc0 |
+| 9 | D1 | Companion PWA | done | 13 unit tests passed | fc2e3b8 |
+| 10 | D1 | Dockerize (dev) | done | Dockerfile + compose created | fc2e3b8 |
 | 11 | D2 | Android adapters | done | 9 contract tests passed | 35b29c9 |
 | 12 | D2 | Real network smart-home | done | 6 unit tests passed | 103b761 |
-| 13 | Pi | Pi adapters | done | 6 contract tests passed | a056fab |
-| 14 | Pi | Harden & ship | done | 6 unit tests passed | 27aec52 |
+| 13 | Pi | Pi adapters | done | 6 contract tests passed | 52819df |
+| 14 | Pi | Harden & ship | done | 6 unit tests passed | da0187d |
 | 15 | Phase 3 | Phase 3 skills & dynamic orchestration | done | 12 new unit/integration tests passed | 4f66ec4 |
-| 16 | Phase 2 | Missing Phase 2 appliance control skills | done | 10 new unit/integration tests passed | (pending) |
+| 16 | Phase 2 | Missing Phase 2 appliance control skills | done | 10 new unit/integration tests passed | 7564d10 |
 
 ## DEFINITION-OF-DONE MATRIX (SPEC §2X.8)
 | Capability | Desktop | Android | Pi |
