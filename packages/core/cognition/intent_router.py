@@ -56,6 +56,10 @@ _HOME_KEYWORDS = [
     "washer",
     "washing machine",
     "lamp",
+    "tv",
+    "television",
+    "volume",
+    "source",
 ]
 _MEMORY_STORE_KEYWORDS = [
     "remember that",
@@ -142,6 +146,33 @@ def _extract_duration(text: str) -> Optional[dict]:
     return None
 
 
+
+
+def _extract_temp(text: str) -> Optional[int]:
+    """Extract temperature value near AC commands."""
+    match = re.search(r"(?:to|at|temp|temperature)\s*(\d{2})", text, re.IGNORECASE)
+    if match:
+        return int(match.group(1))
+    return None
+
+
+def _extract_mode(text: str) -> Optional[str]:
+    """Extract mode from text (cool, heat, dry, fan)."""
+    lower = text.lower()
+    for m in ("cool", "heat", "dry", "fan"):
+        if m in lower:
+            return m
+    return None
+
+
+def _extract_source(text: str) -> Optional[str]:
+    """Extract source name from text."""
+    match = re.search(r"source\s+(?:on\s+tv\s+)?(?:to\s+)?(\w+)", text, re.IGNORECASE)
+    if match:
+        return match.group(1)
+    return None
+
+
 class IntentRouter:
     """Classify user text into an Intent using keyword rules.
 
@@ -196,10 +227,34 @@ class IntentRouter:
                 devices = _extract_devices(text)
                 on_off = _extract_on_off(text)
                 entities = {}
-                if devices:
-                    entities["devices"] = devices
                 if on_off is not None:
                     entities["action"] = "on" if on_off else "off"
+
+                # Check for specific appliances to route to dedicated skills
+                if "ac" in devices:
+                    entities["temp"] = _extract_temp(text)
+                    entities["mode"] = _extract_mode(text)
+                    return Intent(name="control_ac", confidence=0.9, entities=entities)
+
+                if "tv" in devices or "television" in devices:
+                    entities["source"] = _extract_source(text)
+                    if "volume up" in lower or "volume_up" in lower:
+                        entities["action"] = "volume_up"
+                    elif "volume down" in lower or "volume_down" in lower:
+                        entities["action"] = "volume_down"
+                    return Intent(name="control_tv", confidence=0.9, entities=entities)
+
+                if "geyser" in devices or "heater" in devices:
+                    return Intent(name="control_geyser", confidence=0.9, entities=entities)
+
+                if "pump" in devices:
+                    return Intent(name="control_pump", confidence=0.9, entities=entities)
+
+                if "washer" in devices or "washing machine" in devices:
+                    return Intent(name="control_washer", confidence=0.9, entities=entities)
+
+                if devices:
+                    entities["devices"] = devices
                 return Intent(name="home_control", confidence=0.9, entities=entities)
 
         return None
@@ -229,7 +284,8 @@ class IntentRouter:
         """Use LLM to classify when rules don't match."""
         system = (
             "You are an intent classifier. Classify the user message into exactly "
-            "one of: home_control, memory_store, memory_recall, timer, reminder, "
+            "one of: home_control, control_ac, control_tv, control_geyser, control_pump, "
+            "control_washer, memory_store, memory_recall, timer, reminder, "
             "calls, security, sensors, general_chat. Respond with ONLY the intent name, nothing else."
         )
         result = await self._llm.generate(  # type: ignore[union-attr]
@@ -238,6 +294,11 @@ class IntentRouter:
         intent_name = result.strip().lower().replace(" ", "_")
         valid = {
             "home_control",
+            "control_ac",
+            "control_tv",
+            "control_geyser",
+            "control_pump",
+            "control_washer",
             "memory_store",
             "memory_recall",
             "timer",

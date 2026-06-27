@@ -1,0 +1,16 @@
+name: ac
+languages: [en, hi, mr]
+intents:
+  - id: ac.control
+    utterances:
+      en: ["turn on the ac", "turn off the ac", "set ac to {temp} degrees", "set ac mode to {mode}"]
+      hi: ["ac chalu karo", "ac band karo", "ac temperature {temp} karo"]
+      mr: ["ac chalu kar", "ac band kar", "ac temperature {temp} kar"]
+    slots:
+      action: {type: action, required: false}
+      temp: {type: number, required: false}
+      mode: {type: mode, required: false}
+required_permissions: [control_ac]
+hardware_deps: [home]
+offline_capable: true
+entry_points: {execute: "skill:execute"}

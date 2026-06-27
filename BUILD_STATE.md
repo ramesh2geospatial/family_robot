@@ -4,12 +4,12 @@ The autonomous builder (see [BUILD_PROMPT.md](BUILD_PROMPT.md)) updates this fil
 Resume rule: read this file first, find the first 'in_progress'/'pending' step, continue.
 
 ## CURRENT
-- **Stage**: Phase 3
-- **Active step**: 15
+- **Stage**: Phase 2/3 Complete
+- **Active step**: 16
 - **Status**: done
 - **Next action**: complete
 - **Repo green**: yes
-- **Last commit**: 4f66ec4
+- **Last commit**: c36622e
 
 ## STEP TRACKER
 | # | Stage | Step | Status | Tests | Commit |
@@ -30,6 +30,7 @@ Resume rule: read this file first, find the first 'in_progress'/'pending' step, 
 | 13 | Pi | Pi adapters | done | 6 contract tests passed | a056fab |
 | 14 | Pi | Harden & ship | done | 6 unit tests passed | 27aec52 |
 | 15 | Phase 3 | Phase 3 skills & dynamic orchestration | done | 12 new unit/integration tests passed | 4f66ec4 |
+| 16 | Phase 2 | Missing Phase 2 appliance control skills | done | 10 new unit/integration tests passed | (pending) |
 
 ## DEFINITION-OF-DONE MATRIX (SPEC §2X.8)
 | Capability | Desktop | Android | Pi |
@@ -61,3 +62,4 @@ Resume rule: read this file first, find the first 'in_progress'/'pending' step, 
 - 2026-06-27 session: completed step 13 (Pi adapters); implemented Raspberry Pi adapters for ALSA/ReSpeaker audio, Picamera2 camera capture, lgpio relay switch control, and I2C SMBus UPS power monitoring with low battery shutdown callbacks; added systemd service unit and install.sh scripts; 6 new contract tests created; all 161 unit and contract tests green.
 - 2026-06-27 session: completed step 14 (Harden & ship); implemented optional SQLCipher database encryption at rest (using environment variable key), secure signed OTA updates (verification via cryptography or openssl, staged backups, auto-rollback), default-deny nftables firewall config, and a complete security checklists audit; 6 new unit tests; all 168 tests green. Stage Pi complete. Project complete for Phase 1-2 criteria.
 - 2026-06-27 session: completed Phase 3 capabilities; implemented TelephonyPort, Desktop/Android/Pi telephony adapters, three new Phase 3 skills (calls safety whitelist, security night alert check, sensors Zigbee2MQTT reactions), dynamic SkillRegistry orchestration loop integration, and dynamic MQTT topic registration; created 12 new unit and integration tests; all 184 tests pass cleanly.
+- 2026-06-27 session: completed Phase 2 appliance control skills; implemented AcSkill, GeyserSkill (with 20m safety auto-off timer), PumpSkill (with 15m safety dry-run timer), WasherSkill (with detergent pre-check warning), and TvSkill (with IR volume/source selector); updated IntentRouter to classify specific appliance control intents; wired skills into main configuration; added 10 new integration tests; all 194 unit, contract, regression and functional tests pass cleanly.

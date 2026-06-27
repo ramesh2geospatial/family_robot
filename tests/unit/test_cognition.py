@@ -26,10 +26,10 @@ class TestIntentRouterRules:
 
     @pytest.mark.asyncio
     async def test_home_control_turn_on(self, router: IntentRouter) -> None:
-        intent = await router.classify("turn on the geyser")
+        intent = await router.classify("turn on the light")
         assert intent.name == "home_control"
         assert intent.confidence >= 0.8
-        assert "geyser" in intent.entities.get("devices", [])
+        assert "light" in intent.entities.get("devices", [])
         assert intent.entities.get("action") == "on"
 
     @pytest.mark.asyncio

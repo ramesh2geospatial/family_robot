@@ -1,0 +1,14 @@
+name: geyser
+languages: [en, hi, mr]
+intents:
+  - id: geyser.control
+    utterances:
+      en: ["turn on the geyser", "turn off the geyser", "switch on geyser", "switch off geyser"]
+      hi: ["geyser chalu karo", "geyser band karo"]
+      mr: ["geyser chalu kar", "geyser band kar"]
+    slots:
+      action: {type: action, required: false}
+required_permissions: [control_geyser]
+hardware_deps: [home]
+offline_capable: true
+entry_points: {execute: "skill:execute"}

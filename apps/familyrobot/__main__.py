@@ -90,14 +90,19 @@ def _build_components(config: AppConfig) -> dict:
 
     # Skill discovery and registry
     from packages.core.skills import (
+        AcSkill,
         AssistantSkill,
         CallsSkill,
+        GeyserSkill,
         LightsSkill,
         MemoryAdminSkill,
+        PumpSkill,
         RemindersSkill,
         SecuritySkill,
         SensorsSkill,
         SkillRegistry,
+        TvSkill,
+        WasherSkill,
     )
 
     skill_registry = SkillRegistry()
@@ -105,6 +110,13 @@ def _build_components(config: AppConfig) -> dict:
     skill_registry.register(RemindersSkill(), ["timer", "reminder"])
     skill_registry.register(MemoryAdminSkill(), ["memory_store", "memory_recall"])
     skill_registry.register(AssistantSkill(), ["general_chat"])
+
+    # Phase 2 appliance skills
+    skill_registry.register(AcSkill(), ["control_ac"])
+    skill_registry.register(TvSkill(), ["control_tv"])
+    skill_registry.register(GeyserSkill(), ["control_geyser"])
+    skill_registry.register(PumpSkill(), ["control_pump"])
+    skill_registry.register(WasherSkill(), ["control_washer"])
 
     # Phase 3 skills
     sensors_skill = SensorsSkill()

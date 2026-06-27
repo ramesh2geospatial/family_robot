@@ -1,0 +1,15 @@
+name: tv
+languages: [en, hi, mr]
+intents:
+  - id: tv.control
+    utterances:
+      en: ["turn on the tv", "turn off the tv", "volume up the tv", "volume down the tv", "change source on tv to {source}"]
+      hi: ["tv chalu karo", "tv band karo", "tv ka volume badhao"]
+      mr: ["tv chalu kar", "tv band kar", "tv cha aawaj vadhav"]
+    slots:
+      action: {type: action, required: false}
+      source: {type: source, required: false}
+required_permissions: [control_tv]
+hardware_deps: [home]
+offline_capable: true
+entry_points: {execute: "skill:execute"}

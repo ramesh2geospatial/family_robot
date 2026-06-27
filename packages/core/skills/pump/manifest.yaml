@@ -1,0 +1,14 @@
+name: pump
+languages: [en, hi, mr]
+intents:
+  - id: pump.control
+    utterances:
+      en: ["turn on the pump", "turn off the pump", "switch on water pump", "switch off water pump"]
+      hi: ["pump chalu karo", "pump band karo", "pani ka pump chalu karo"]
+      mr: ["pump chalu kar", "pump band kar", "panyacha pump chalu kar"]
+    slots:
+      action: {type: action, required: false}
+required_permissions: [control_pump]
+hardware_deps: [home]
+offline_capable: true
+entry_points: {execute: "skill:execute"}

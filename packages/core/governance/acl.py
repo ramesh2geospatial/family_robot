@@ -144,6 +144,19 @@ class ACL:
         For ``memory_store``, checks ``memory_write`` permission.
         Other intents are allowed by default.
         """
+        # Phase 2 specific appliance/telephony intents mapping directly
+        if intent_name in (
+            "control_ac",
+            "control_tv",
+            "control_geyser",
+            "control_pump",
+            "control_washer",
+        ):
+            return self.check_permission(user, intent_name)
+
+        if intent_name in ("make_calls", "calls"):
+            return self.check_permission(user, "make_calls")
+
         if intent_name == "home_control" and entities:
             devices = entities.get("devices", [])
             for dev in devices:

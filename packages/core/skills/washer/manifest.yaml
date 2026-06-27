@@ -1,0 +1,14 @@
+name: washer
+languages: [en, hi, mr]
+intents:
+  - id: washer.control
+    utterances:
+      en: ["turn on the washing machine", "turn off the washing machine", "switch on washer", "switch off washer"]
+      hi: ["washing machine chalu karo", "washing machine band karo"]
+      mr: ["washing machine chalu kar", "washing machine band kar"]
+    slots:
+      action: {type: action, required: false}
+required_permissions: [control_washer]
+hardware_deps: [home]
+offline_capable: true
+entry_points: {execute: "skill:execute"}
