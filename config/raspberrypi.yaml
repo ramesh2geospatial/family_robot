@@ -1,2 +1,14 @@
 # FamilyRobot Raspberry Pi Platform Override
 platform: raspberrypi
+
+# Cognition
+llm_model_path: models/llama-3.2-3b.Q4_K_M.gguf
+llm_n_ctx: 2048
+llm_n_threads: 4
+
+# Memory
+memory_db_path: data/memory.db
+embedding_model: all-MiniLM-L6-v2
+
+# Expression / TTS
+tts_model_path: null  # Piper model path; null uses espeak/pyttsx3

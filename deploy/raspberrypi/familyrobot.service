@@ -1,0 +1,17 @@
+[Unit]
+Description=FamilyRobot Voice Orchestrator Loop
+After=sound.target network-online.target pulseaudio.service
+Wants=sound.target network-online.target
+
+[Service]
+Type=simple
+User=pi
+WorkingDirectory=/home/pi/family_robots
+ExecStart=/home/pi/family_robots/venv/bin/python -m apps.familyrobot --platform raspberrypi
+Restart=always
+RestartSec=5
+Environment=PYTHONUNBUFFERED=1
+Environment=PULSE_RUNTIME_PATH=/run/user/1000/pulse
+
+[Install]
+WantedBy=multi-user.target

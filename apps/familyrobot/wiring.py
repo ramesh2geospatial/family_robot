@@ -123,6 +123,21 @@ def wire_components(
             power=TermuxPowerAdapter(),
             notify=TermuxNotifyAdapter(),
         )
+    elif config.platform == "raspberrypi":
+        from packages.adapters.raspberrypi import (
+            AlsaAudioAdapter,
+            PiCameraAdapter,
+            PiHomeAdapter,
+            PiNotifyAdapter,
+            PiPowerAdapter,
+        )
+        return WiredComponents(
+            audio=AlsaAudioAdapter(),
+            camera=PiCameraAdapter(),
+            home=home_adapter or PiHomeAdapter(config, mqtt_client),
+            power=PiPowerAdapter(),
+            notify=PiNotifyAdapter(),
+        )
 
     # Fallback to mocks for unsupported / pending platforms
     return WiredComponents(
@@ -132,3 +147,4 @@ def wire_components(
         power=MockPowerAdapter(),
         notify=MockNotifyAdapter(),
     )
+
