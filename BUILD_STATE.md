@@ -5,11 +5,11 @@ Resume rule: read this file first, find the first 'in_progress'/'pending' step, 
 
 ## CURRENT
 - **Stage**: Phase 2/3 Complete
-- **Active step**: 17
+- **Active step**: 18
 - **Status**: done
 - **Next action**: none (all phases complete)
 - **Repo green**: yes
-- **Last commit**: 7a8ad93
+- **Last commit**: 4efcd04
 
 ## STEP TRACKER
 | # | Stage | Step | Status | Tests | Commit |
@@ -32,6 +32,7 @@ Resume rule: read this file first, find the first 'in_progress'/'pending' step, 
 | 15 | Phase 3 | Phase 3 skills & dynamic orchestration | done | 12 new unit/integration tests passed | 4f66ec4 |
 | 16 | Phase 2 | Missing Phase 2 appliance control skills | done | 10 new unit/integration tests passed | 7564d10 |
 | 17 | Phase 2 | Missing Phase 2 dance skill & webapp audit logging | done | 22 new/updated unit tests passed | 7a8ad93 |
+| 18 | Phase 1 | Missing Phase 1 enroll skill | done | 2 new/updated unit tests passed | 4efcd04 |
 
 ## DEFINITION-OF-DONE MATRIX (SPEC §2X.8)
 | Capability | Desktop | Android | Pi |
@@ -65,3 +66,5 @@ Resume rule: read this file first, find the first 'in_progress'/'pending' step, 
 - 2026-06-27 session: completed Phase 3 capabilities; implemented TelephonyPort, Desktop/Android/Pi telephony adapters, three new Phase 3 skills (calls safety whitelist, security night alert check, sensors Zigbee2MQTT reactions), dynamic SkillRegistry orchestration loop integration, and dynamic MQTT topic registration; created 12 new unit and integration tests; all 184 tests pass cleanly.
 - 2026-06-27 session: completed Phase 2 appliance control skills; implemented AcSkill, GeyserSkill (with 20m safety auto-off timer), PumpSkill (with 15m safety dry-run timer), WasherSkill (with detergent pre-check warning), and TvSkill (with IR volume/source selector); updated IntentRouter to classify specific appliance control intents; wired skills into main configuration; added 10 new integration tests; all 194 unit, contract, regression and functional tests pass cleanly.
 - 2026-06-27 session: completed Step 17; implemented missing Phase 2 dance skill (music video playback + MediaPipe/fallback pose scoring via camera); added audit logging support to FastAPI Webapp Companion endpoints (capturing ACL checks, device commands, enrollment, and memory transactions); added lifespan auto-initialization fallback for standalone Webapp execution; added unit tests; all 216 tests passed cleanly.
+- 2026-06-27 session: completed Step 18; implemented missing Phase 1 enroll skill (directing users verbally to the webapp wizard for face/voice capture); updated IntentRouter to classify enrollment intents; added unit tests; all 218 tests passed cleanly.
+
