@@ -4,7 +4,7 @@ Shared asynchronous MQTT client wrapper using aiomqtt.
 
 import asyncio
 import logging
-from typing import Dict, Optional
+from typing import Dict, Optional, Any
 
 from aiomqtt import Client
 
@@ -36,6 +36,12 @@ class MqttHomeClient:
         self._running = False
         self._task: Optional[asyncio.Task] = None
         self._connected = asyncio.Event()
+        self._listeners: Dict[str, Any] = {}
+
+    def register_listener(self, prefix: str, callback: Any) -> None:
+        """Register a callback for topics matching the given prefix."""
+        self._listeners[prefix] = callback
+        logger.info(f"Registered MQTT topic prefix listener for: {prefix}")
 
     async def start(self) -> None:
         """Start the background MQTT client loop."""
@@ -99,6 +105,9 @@ class MqttHomeClient:
                     # ESPHome generic state topics
                     await client.subscribe("+/switch/+/state")
 
+                    # Zigbee2MQTT topics for Phase 3 sensors
+                    await client.subscribe("zigbee2mqtt/#")
+
                     async for message in client.messages:
                         topic = str(message.topic)
                         payload = (
@@ -107,6 +116,17 @@ class MqttHomeClient:
                             else str(message.payload)
                         )
                         logger.debug(f"MQTT message: {topic} -> {payload}")
+
+                        # Route to prefix listeners
+                        for prefix, callback in self._listeners.items():
+                            if topic.startswith(prefix):
+                                try:
+                                    if asyncio.iscoroutinefunction(callback):
+                                        asyncio.create_task(callback(topic, payload))
+                                    else:
+                                        callback(topic, payload)
+                                except Exception as err:
+                                    logger.error(f"Error in MQTT listener callback: {err}")
 
                         # Parse Tasmota topic
                         # stat/<device>/POWER

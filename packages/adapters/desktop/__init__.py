@@ -7,6 +7,7 @@ from packages.adapters.desktop.camera import OpenCVCameraAdapter
 from packages.adapters.desktop.home import DesktopHomeAdapter
 from packages.adapters.desktop.notify import DesktopNotifyAdapter
 from packages.adapters.desktop.power import DesktopPowerAdapter
+from packages.adapters.desktop.telephony import DesktopTelephonyAdapter
 
 __all__ = [
     "PyAudioAdapter",
@@ -14,4 +15,5 @@ __all__ = [
     "DesktopHomeAdapter",
     "DesktopPowerAdapter",
     "DesktopNotifyAdapter",
+    "DesktopTelephonyAdapter",
 ]

@@ -68,9 +68,20 @@ class MockPowerAdapter(PowerPort):
         pass
 
 
+from packages.core.ports.telephony import TelephonyPort
+
+
 class MockNotifyAdapter(NotifyPort):
     async def push(self, user_id: str, title: str, body: str) -> None:
         pass
+
+
+class MockTelephonyAdapter(TelephonyPort):
+    async def make_call(self, phone_number: str) -> bool:
+        return True
+
+    async def open_whatsapp(self, phone_number: str, message: str) -> bool:
+        return True
 
 
 @dataclass
@@ -80,6 +91,7 @@ class WiredComponents:
     home: HomePort
     power: PowerPort
     notify: NotifyPort
+    telephony: TelephonyPort
 
 
 def wire_components(
@@ -98,6 +110,7 @@ def wire_components(
             DesktopHomeAdapter,
             DesktopNotifyAdapter,
             DesktopPowerAdapter,
+            DesktopTelephonyAdapter,
             OpenCVCameraAdapter,
             PyAudioAdapter,
         )
@@ -107,6 +120,7 @@ def wire_components(
             home=home_adapter or DesktopHomeAdapter(),
             power=DesktopPowerAdapter(),
             notify=DesktopNotifyAdapter(),
+            telephony=DesktopTelephonyAdapter(),
         )
     elif config.platform == "android":
         from packages.adapters.android import (
@@ -115,6 +129,7 @@ def wire_components(
             TermuxHomeAdapter,
             TermuxNotifyAdapter,
             TermuxPowerAdapter,
+            TermuxTelephonyAdapter,
         )
         return WiredComponents(
             audio=TermuxAudioAdapter(),
@@ -122,6 +137,7 @@ def wire_components(
             home=home_adapter or TermuxHomeAdapter(),
             power=TermuxPowerAdapter(),
             notify=TermuxNotifyAdapter(),
+            telephony=TermuxTelephonyAdapter(),
         )
     elif config.platform == "raspberrypi":
         from packages.adapters.raspberrypi import (
@@ -130,6 +146,7 @@ def wire_components(
             PiHomeAdapter,
             PiNotifyAdapter,
             PiPowerAdapter,
+            PiTelephonyAdapter,
         )
         return WiredComponents(
             audio=AlsaAudioAdapter(),
@@ -137,6 +154,7 @@ def wire_components(
             home=home_adapter or PiHomeAdapter(config, mqtt_client),
             power=PiPowerAdapter(),
             notify=PiNotifyAdapter(),
+            telephony=PiTelephonyAdapter(mqtt_client),
         )
 
     # Fallback to mocks for unsupported / pending platforms
@@ -146,5 +164,6 @@ def wire_components(
         home=home_adapter or MockHomeAdapter(),
         power=MockPowerAdapter(),
         notify=MockNotifyAdapter(),
+        telephony=MockTelephonyAdapter(),
     )
 

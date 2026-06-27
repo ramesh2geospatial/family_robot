@@ -1,0 +1,13 @@
+name: security
+languages: [en, hi, mr]
+intents:
+  - id: security.night_check
+    utterances:
+      en: ["check security", "is there anyone outside", "run security check"]
+      hi: ["security check karo", "bahar koi hai kya"]
+      mr: ["security check kar", "baher koni aahe ka"]
+    slots: {}
+required_permissions: [general_info]
+hardware_deps: [camera, notify]
+offline_capable: true
+entry_points: {execute: "skill:execute"}

@@ -1,0 +1,13 @@
+name: calls
+languages: [en, hi, mr]
+intents:
+  - id: calls.make_call
+    utterances:
+      en: ["call {contact}", "make a phone call to {contact}", "dial {contact}"]
+      hi: ["{contact} ko call karo", "{contact} ko phone lagao"]
+      mr: ["{contact} la call kar", "{contact} la phone laav"]
+    slots: {contact: {type: contact, required: true}}
+required_permissions: [make_calls]
+hardware_deps: [telephony]
+offline_capable: true
+entry_points: {execute: "skill:execute"}

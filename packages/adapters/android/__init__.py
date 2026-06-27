@@ -7,6 +7,7 @@ from packages.adapters.android.camera import TermuxCameraAdapter
 from packages.adapters.android.home import TermuxHomeAdapter
 from packages.adapters.android.notify import TermuxNotifyAdapter
 from packages.adapters.android.power import TermuxPowerAdapter
+from packages.adapters.android.telephony import TermuxTelephonyAdapter
 
 __all__ = [
     "TermuxAudioAdapter",
@@ -14,4 +15,5 @@ __all__ = [
     "TermuxHomeAdapter",
     "TermuxPowerAdapter",
     "TermuxNotifyAdapter",
+    "TermuxTelephonyAdapter",
 ]

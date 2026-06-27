@@ -55,6 +55,9 @@ _REMINDER_KEYWORDS = [
     "remind me to", "reminder for", "set a reminder",
     "set reminder",
 ]
+_CALLS_KEYWORDS = ["call ", "phone ", "dial "]
+_SECURITY_KEYWORDS = ["security check", "check security", "anyone outside"]
+_SENSORS_KEYWORDS = ["sensor status", "door status", "doors locked"]
 
 _DEVICE_NAMES = [
     "geyser", "light", "fan", "ac", "pump", "heater",
@@ -113,6 +116,19 @@ class IntentRouter:
         lower = text.lower()
 
         # Order matters: more specific intents first
+        for kw in _CALLS_KEYWORDS:
+            if kw in lower:
+                contact = text[lower.index(kw) + len(kw):].strip().rstrip("?.!")
+                return Intent(name="calls", confidence=0.9, entities={"contact": contact})
+
+        for kw in _SECURITY_KEYWORDS:
+            if kw in lower:
+                return Intent(name="security", confidence=0.9, entities={})
+
+        for kw in _SENSORS_KEYWORDS:
+            if kw in lower:
+                return Intent(name="sensors", confidence=0.9, entities={})
+
         for kw in _MEMORY_STORE_KEYWORDS:
             if kw in lower:
                 return Intent(name="memory_store", confidence=0.9, entities={})
@@ -172,14 +188,14 @@ class IntentRouter:
         system = (
             "You are an intent classifier. Classify the user message into exactly "
             "one of: home_control, memory_store, memory_recall, timer, reminder, "
-            "general_chat. Respond with ONLY the intent name, nothing else."
+            "calls, security, sensors, general_chat. Respond with ONLY the intent name, nothing else."
         )
         result = await self._llm.generate(  # type: ignore[union-attr]
             text, system=system, max_tokens=20, temperature=0.1
         )
         intent_name = result.strip().lower().replace(" ", "_")
         valid = {"home_control", "memory_store", "memory_recall",
-                 "timer", "reminder", "general_chat"}
+                 "timer", "reminder", "calls", "security", "sensors", "general_chat"}
         if intent_name not in valid:
             intent_name = "general_chat"
         return Intent(name=intent_name, confidence=0.7, entities={})

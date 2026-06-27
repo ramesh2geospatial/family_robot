@@ -57,6 +57,20 @@ async def run_loop(
     acl = components.get("acl", ACL())
     identity_store = components.get("identity_store", IdentityStore())
     audit_log = components.get("audit_log", AuditLog(log_path="data/audit.jsonl"))
+    skill_registry = components.get("skill_registry")
+
+    # Construct ports dictionary dynamically for skill execution context
+    ports = {
+        "audio": audio,
+        "camera": components.get("camera"),
+        "home": home,
+        "power": components.get("power"),
+        "notify": components.get("notify"),
+        "telephony": components.get("telephony"),
+        "llm": llm,
+        "memory": memory,
+        "identity_store": identity_store,
+    }
 
     try:
         while not shutdown_event.is_set():
@@ -64,6 +78,7 @@ async def run_loop(
                 audio, home, llm, memory, tts,
                 wakeword, vad, stt, intent_router,
                 conversation_logger, acl, identity_store, audit_log,
+                skill_registry, ports,
                 shutdown_event,
             )
     except asyncio.CancelledError:
@@ -80,6 +95,7 @@ async def _listen_cycle(
     audio, home, llm, memory, tts,
     wakeword, vad, stt, intent_router,
     conversation_logger, acl, identity_store, audit_log,
+    skill_registry, ports,
     shutdown_event: asyncio.Event,
 ) -> None:
     """One wake-listen-respond cycle."""
@@ -180,7 +196,10 @@ async def _listen_cycle(
         if not acl_result.allowed:
             response = acl_result.spoken_denial
         else:
-            raw_response = await _handle_intent(intent, clean_text, home, llm, memory)
+            raw_response = await _handle_intent(
+                intent, clean_text, home, llm, memory,
+                skill_registry=skill_registry, ports=ports, user=user
+            )
             response = format_response(raw_response, intent.name)
     except Exception as exc:
         logger.error("Processing failed: %s", exc, exc_info=True)
@@ -203,9 +222,35 @@ async def _listen_cycle(
         )
 
 
-async def _handle_intent(intent, text: str, home, llm, memory) -> str:
+async def _handle_intent(
+    intent, text: str, home, llm, memory,
+    skill_registry=None, ports=None, user=None
+) -> str:
     """Route intent to the appropriate handler and return raw text."""
 
+    if skill_registry:
+        skill = skill_registry.get_skill(intent.name)
+        if skill:
+            from packages.core.skills import SkillContext
+            ctx = SkillContext(
+                user_id=user.user_id if user else "unknown",
+                user_role=user.role.value if user else "guest",
+                user_name=user.name if user else "Someone",
+                language="en",
+                raw_text=text,
+                slots=intent.entities,
+                ports=ports or {},
+            )
+            try:
+                result = await skill.execute(ctx)
+                if result.memory_item and ports and "memory" in ports:
+                    await ports["memory"].store(result.memory_item)
+                return result.spoken_response
+            except Exception as e:
+                logger.error(f"Error executing skill {skill.name}: {e}", exc_info=True)
+                return "Sorry, I encountered an error executing that request."
+
+    # Backward-compatible fallback dispatcher
     if intent.name == "home_control":
         devices = intent.entities.get("devices", [])
         action = intent.entities.get("action", "on")

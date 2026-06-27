@@ -73,12 +73,45 @@ def _build_components(config: AppConfig) -> dict:
     identity_store.enroll(FamilyMember(user_id="parent_default", name="Ramesh", role=Role.PARENT))
     identity_store.enroll(FamilyMember(user_id="child_default", name="Arjun", role=Role.CHILD))
 
+    # Skill discovery and registry
+    from packages.core.skills import (
+        SkillRegistry,
+        LightsSkill,
+        RemindersSkill,
+        MemoryAdminSkill,
+        AssistantSkill,
+        CallsSkill,
+        SecuritySkill,
+        SensorsSkill,
+    )
+    skill_registry = SkillRegistry()
+    skill_registry.register(LightsSkill(), ["home_control"])
+    skill_registry.register(RemindersSkill(), ["timer", "reminder"])
+    skill_registry.register(MemoryAdminSkill(), ["memory_store", "memory_recall"])
+    skill_registry.register(AssistantSkill(), ["general_chat"])
+
+    # Phase 3 skills
+    sensors_skill = SensorsSkill()
+    skill_registry.register(CallsSkill(), ["calls"])
+    skill_registry.register(SecuritySkill(), ["security"])
+    skill_registry.register(sensors_skill, ["sensors"])
+
+    # Wire Zigbee2MQTT sensor notifications if MQTT is used
+    if mqtt_client:
+        mqtt_client.register_listener(
+            "zigbee2mqtt/",
+            lambda topic, payload: sensors_skill.handle_mqtt_message(
+                topic, payload, {"notify": wired.notify}
+            )
+        )
+
     return {
         "audio": wired.audio,
         "camera": wired.camera,
         "home": wired.home,
         "power": wired.power,
         "notify": wired.notify,
+        "telephony": wired.telephony,
         "mqtt_client": mqtt_client,
         "wakeword": wakeword,
         "vad": vad,
@@ -91,6 +124,7 @@ def _build_components(config: AppConfig) -> dict:
         "acl": acl,
         "identity_store": identity_store,
         "audit_log": audit_log,
+        "skill_registry": skill_registry,
     }
 
 

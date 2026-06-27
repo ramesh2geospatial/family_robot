@@ -1,0 +1,13 @@
+name: sensors
+languages: [en, hi, mr]
+intents:
+  - id: sensors.status
+    utterances:
+      en: ["check door status", "are the doors locked", "sensor status", "check sensors"]
+      hi: ["darwaja band hai kya", "sensors ka status batao"]
+      mr: ["darwaza bandh aahe ka", "sensor status sanga"]
+    slots: {}
+required_permissions: [general_info]
+hardware_deps: []
+offline_capable: true
+entry_points: {execute: "skill:execute"}
