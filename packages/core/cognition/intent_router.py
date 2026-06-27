@@ -95,7 +95,11 @@ _REMINDER_KEYWORDS = [
 _CALLS_KEYWORDS = ["call ", "phone ", "dial "]
 _SECURITY_KEYWORDS = ["security check", "check security", "anyone outside"]
 _SENSORS_KEYWORDS = ["sensor status", "door status", "doors locked"]
-_MUSIC_KEYWORDS = ["play ", "pause music", "stop music", "next song", "music", "gana"]
+_MUSIC_KEYWORDS = [
+    "play ", "pause music", "stop music", "next song", "music",
+    "gana", "gaana", "गाणे", "गाना", "song", "bajao", "बजाओ",
+    "sunao", "सुनाओ", "lav", "लाव",
+]
 _COOKING_KEYWORDS = ["recipe", "cook", "convert", "step", "pudhchi", "pudhe"]
 _HOMEWORK_KEYWORDS = ["explain", "solve", "quiz", "question about"]
 _DANCE_KEYWORDS = ["dance", "nacho", "nachne", "डान्स", "नाच"]
@@ -227,6 +231,41 @@ def _extract_homework_quiz(text: str) -> Optional[str]:
     return None
 
 
+_MUSIC_FILLER = re.compile(
+    r"\b(?:please|karo|kar|kijiye|kijie|de|do|na|bhi|ek|mera|mere|mujhe|"
+    r"hamara|hamare|liye|ko|se|it|the|a|an|some|me|my|for)\b",
+    re.IGNORECASE,
+)
+
+_MUSIC_ACTION_WORDS = re.compile(
+    r"\b(?:play|bajao|sunao|lav|gana|gaana|song|music|गाणे|गाना|बजाओ|सुनाओ|लाव)\b",
+    re.IGNORECASE | re.UNICODE,
+)
+
+
+def _extract_song_name(text: str) -> str:
+    """Extract the song/query name from a music-related utterance.
+
+    Handles patterns like:
+    - "play Tum Hi Ho"
+    - "Changvalya please play it"
+    - "mujhe ek gaana sunao Tum Hi Ho"
+    - "play Tum Hi Ho by Arijit Singh"
+    """
+    # Remove action/filler words to isolate the song name
+    cleaned = _MUSIC_ACTION_WORDS.sub(" ", text)
+    cleaned = _MUSIC_FILLER.sub(" ", cleaned)
+
+    # Collapse whitespace and strip punctuation
+    cleaned = re.sub(r"\s+", " ", cleaned).strip().strip(",.?!;:")
+
+    # If nothing useful remains, return empty
+    if not cleaned or len(cleaned) < 2:
+        return ""
+
+    return cleaned
+
+
 class IntentRouter:
     """Classify user text into an Intent using keyword rules.
 
@@ -286,8 +325,8 @@ class IntentRouter:
                     action = "stop"
                 elif "next" in lower:
                     action = "next"
-                elif lower.startswith("play "):
-                    song = text[5:].strip().rstrip("?.!")
+                else:
+                    song = _extract_song_name(text)
                 return Intent(
                     name="play_music",
                     confidence=0.9,

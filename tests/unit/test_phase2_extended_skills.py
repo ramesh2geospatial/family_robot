@@ -43,6 +43,17 @@ class TestExtendedIntentParsing:
         assert intent2.name == "play_music"
         assert intent2.entities.get("action") == "pause"
 
+        # Hindi pattern: "X please play it" → should extract "Changvalya"
+        intent3 = await router.classify("Changvalya please play it")
+        assert intent3.name == "play_music"
+        assert intent3.entities.get("action") == "play"
+        assert "Changvalya" in intent3.entities.get("song", "")
+
+        # Hindi pattern: "mujhe Tum Hi Ho sunao"
+        intent4 = await router.classify("mujhe Tum Hi Ho sunao")
+        assert intent4.name == "play_music"
+        assert "Tum Hi Ho" in intent4.entities.get("song", "")
+
     @pytest.mark.asyncio
     async def test_cooking_intent(self) -> None:
         router = IntentRouter()
@@ -145,12 +156,53 @@ class TestExtendedSkills:
         mock_home.set_level.assert_called_once_with("fan", 60)
 
     @pytest.mark.asyncio
-    async def test_music_skill(self) -> None:
+    async def test_music_skill_with_media_player(self) -> None:
+        mock_player = AsyncMock()
+        mock_player.play = AsyncMock(return_value="Vande Mataram - Lata")
+        ctx = SkillContext(
+            slots={"song": "Vande Mataram"},
+            ports={"media_player": mock_player},
+        )
         skill = MusicSkill()
-        ctx = SkillContext(slots={"song": "Vande Mataram"}, ports={})
         result = await skill.execute(ctx)
         assert result.success is True
         assert "Vande Mataram" in result.spoken_response
+        mock_player.play.assert_called_once_with("Vande Mataram")
+
+    @pytest.mark.asyncio
+    async def test_music_skill_pause(self) -> None:
+        mock_player = AsyncMock()
+        ctx = SkillContext(
+            slots={"action": "pause"},
+            ports={"media_player": mock_player},
+        )
+        skill = MusicSkill()
+        result = await skill.execute(ctx)
+        assert result.success is True
+        assert "pause" in result.spoken_response.lower()
+        mock_player.pause.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_music_skill_stop(self) -> None:
+        mock_player = AsyncMock()
+        ctx = SkillContext(
+            slots={"action": "stop"},
+            ports={"media_player": mock_player},
+        )
+        skill = MusicSkill()
+        result = await skill.execute(ctx)
+        assert result.success is True
+        assert "stop" in result.spoken_response.lower()
+        mock_player.stop.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_music_skill_browser_fallback(self) -> None:
+        """When no media_player port, fallback to browser."""
+        skill = MusicSkill()
+        ctx = SkillContext(slots={"song": "Tum Hi Ho"}, ports={})
+        result = await skill.execute(ctx)
+        assert result.success is True
+        assert "Tum Hi Ho" in result.spoken_response
 
     @pytest.mark.asyncio
     async def test_cooking_skill_recipe_flow(self) -> None:

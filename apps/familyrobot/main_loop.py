@@ -67,6 +67,7 @@ async def run_loop(
         "power": components.get("power"),
         "notify": components.get("notify"),
         "telephony": components.get("telephony"),
+        "media_player": components.get("media_player"),
         "llm": llm,
         "memory": memory,
         "identity_store": identity_store,

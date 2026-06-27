@@ -4,10 +4,10 @@ The autonomous builder (see [BUILD_PROMPT.md](BUILD_PROMPT.md)) updates this fil
 Resume rule: read this file first, find the first 'in_progress'/'pending' step, continue.
 
 ## CURRENT
-- **Stage**: Phase 2/3 Complete
-- **Active step**: 18
+- **Stage**: Phase 2/3 Complete + UX Improvements
+- **Active step**: 19
 - **Status**: done
-- **Next action**: none (all phases complete)
+- **Next action**: install mpv + yt-dlp for inline music playback
 - **Repo green**: yes
 - **Last commit**: 4efcd04
 
@@ -33,6 +33,7 @@ Resume rule: read this file first, find the first 'in_progress'/'pending' step, 
 | 16 | Phase 2 | Missing Phase 2 appliance control skills | done | 10 new unit/integration tests passed | 7564d10 |
 | 17 | Phase 2 | Missing Phase 2 dance skill & webapp audit logging | done | 22 new/updated unit tests passed | 7a8ad93 |
 | 18 | Phase 1 | Missing Phase 1 enroll skill | done | 2 new/updated unit tests passed | 4efcd04 |
+| 19 | UX | Music playback: yt-dlp + mpv + song extraction | done | 15 new/updated tests passed (228 total) | pending |
 
 ## DEFINITION-OF-DONE MATRIX (SPEC §2X.8)
 | Capability | Desktop | Android | Pi |
@@ -67,4 +68,5 @@ Resume rule: read this file first, find the first 'in_progress'/'pending' step, 
 - 2026-06-27 session: completed Phase 2 appliance control skills; implemented AcSkill, GeyserSkill (with 20m safety auto-off timer), PumpSkill (with 15m safety dry-run timer), WasherSkill (with detergent pre-check warning), and TvSkill (with IR volume/source selector); updated IntentRouter to classify specific appliance control intents; wired skills into main configuration; added 10 new integration tests; all 194 unit, contract, regression and functional tests pass cleanly.
 - 2026-06-27 session: completed Step 17; implemented missing Phase 2 dance skill (music video playback + MediaPipe/fallback pose scoring via camera); added audit logging support to FastAPI Webapp Companion endpoints (capturing ACL checks, device commands, enrollment, and memory transactions); added lifespan auto-initialization fallback for standalone Webapp execution; added unit tests; all 216 tests passed cleanly.
 - 2026-06-27 session: completed Step 18; implemented missing Phase 1 enroll skill (directing users verbally to the webapp wizard for face/voice capture); updated IntentRouter to classify enrollment intents; added unit tests; all 218 tests passed cleanly.
+- 2026-06-27 session: completed Step 19; upgraded music playback: created packages.core.media.MediaPlayer (yt-dlp URL resolution + mpv headless audio streaming with IPC pause/stop/next); rewrote MusicSkill to use MediaPlayer port with browser fallback; fixed intent router song name extraction to handle Hindi/Marathi patterns ("X play karo", "please play X", "mujhe X sunao"); wired MediaPlayer into main loop ports and startup; added 15 new/updated unit tests; all 228 tests passed cleanly.
 

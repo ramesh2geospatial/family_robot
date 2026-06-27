@@ -28,6 +28,7 @@ from packages.core.governance import (
     Role,
 )
 from packages.core.memory import MemoryStore
+from packages.core.media import MediaPlayer
 from packages.core.perception import (
     SpeechToText,
     VoiceActivityDetector,
@@ -148,6 +149,9 @@ def _build_components(config: AppConfig) -> dict:
             ),
         )
 
+    # Media player for music skill
+    media_player = MediaPlayer()
+
     return {
         "audio": wired.audio,
         "camera": wired.camera,
@@ -155,6 +159,7 @@ def _build_components(config: AppConfig) -> dict:
         "power": wired.power,
         "notify": wired.notify,
         "telephony": wired.telephony,
+        "media_player": media_player,
         "mqtt_client": mqtt_client,
         "wakeword": wakeword,
         "vad": vad,
