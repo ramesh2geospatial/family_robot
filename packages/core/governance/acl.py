@@ -42,20 +42,16 @@ _PERMISSION_MATRIX: dict[str, set[Role]] = {
     "control_fan": {Role.PARENT, Role.ADULT, Role.TEEN, Role.CHILD, Role.GUEST},
     "play_music": {Role.PARENT, Role.ADULT, Role.TEEN, Role.CHILD, Role.GUEST},
     "general_info": {Role.PARENT, Role.ADULT, Role.TEEN, Role.CHILD, Role.GUEST},
-
     # Tier 2: teen+
     "control_washer": {Role.PARENT, Role.ADULT, Role.TEEN},
-
     # Tier 3: adult+
     "control_ac": {Role.PARENT, Role.ADULT},
     "control_tv": {Role.PARENT, Role.ADULT},
     "control_geyser": {Role.PARENT, Role.ADULT},
     "control_pump": {Role.PARENT, Role.ADULT},
     "make_calls": {Role.PARENT, Role.ADULT},
-
     # Special: memory writes (everyone except child)
     "memory_write": {Role.PARENT, Role.ADULT, Role.TEEN, Role.GUEST},
-
     # Admin
     "admin": {Role.PARENT},
 }
@@ -110,13 +106,13 @@ class ACL:
             return ACLResult(allowed=True)
 
         if user.role in allowed_roles:
-            logger.debug("ACL ALLOW: %s (%s) → %s", user.name, user.role.value, permission)
+            logger.debug(
+                "ACL ALLOW: %s (%s) → %s", user.name, user.role.value, permission
+            )
             return ACLResult(allowed=True)
 
         denial = _POLITE_DENIALS.get(permission, _DEFAULT_DENIAL)
-        logger.info(
-            "ACL DENY: %s (%s) → %s", user.name, user.role.value, permission
-        )
+        logger.info("ACL DENY: %s (%s) → %s", user.name, user.role.value, permission)
         return ACLResult(
             allowed=False,
             reason=f"Role '{user.role.value}' lacks '{permission}'",

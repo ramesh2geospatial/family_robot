@@ -11,6 +11,7 @@ from packages.core.governance.identity import (
     IdentityStore,
     Role,
 )
+from packages.core.governance.updater import OtaUpdater
 
 __all__ = [
     "ACL",
@@ -21,4 +22,5 @@ __all__ = [
     "IdentityStore",
     "Role",
     "UNKNOWN_USER",
+    "OtaUpdater",
 ]

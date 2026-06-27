@@ -58,7 +58,9 @@ class IdentityStore:
     def enroll(self, member: FamilyMember) -> None:
         """Add or update a family member."""
         self._members[member.user_id] = member
-        logger.info("Enrolled %s (%s) as %s", member.name, member.user_id, member.role.value)
+        logger.info(
+            "Enrolled %s (%s) as %s", member.name, member.user_id, member.role.value
+        )
 
     def get(self, user_id: str) -> FamilyMember:
         """Return a member by ID, or UNKNOWN_USER."""

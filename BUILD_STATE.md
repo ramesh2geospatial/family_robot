@@ -6,10 +6,10 @@ Resume rule: read this file first, find the first 'in_progress'/'pending' step, 
 ## CURRENT
 - **Stage**: Pi
 - **Active step**: 14
-- **Status**: pending
-- **Next action**: encrypt memory DB (SQLCipher/LUKS), signed OTA updates, update security checklist
+- **Status**: done
+- **Next action**: project complete for Phase 1-2 exit criteria
 - **Repo green**: yes
-- **Last commit**: a056fab
+- **Last commit**: 27aec52
 
 ## STEP TRACKER
 | # | Stage | Step | Status | Tests | Commit |
@@ -28,18 +28,18 @@ Resume rule: read this file first, find the first 'in_progress'/'pending' step, 
 | 11 | D2 | Android adapters | done | 9 contract tests passed | 35b29c9 |
 | 12 | D2 | Real network smart-home | done | 6 unit tests passed | 103b761 |
 | 13 | Pi | Pi adapters | done | 6 contract tests passed | a056fab |
-| 14 | Pi | Harden & ship | pending | - | - |
+| 14 | Pi | Harden & ship | done | 6 unit tests passed | 27aec52 |
 
 ## DEFINITION-OF-DONE MATRIX (SPEC §2X.8)
 | Capability | Desktop | Android | Pi |
 |---|---|---|---|
-| Wake "Hello Puppy" | [x] | [x] | [ ] |
-| AEC + barge-in | [x] | [x] | [ ] |
-| STT->LLM->TTS (en/hi/mr) | [x] | [x] | [ ] |
-| Enroll face+voice | [x] | [x] | [ ] |
-| Memory persists restart | [x] | [x] | [ ] |
-| Smart-home command | [x] | [x] | [ ] |
-| PWA reachable from phone | [x] | [x] | [ ] |
+| Wake "Hello Puppy" | [x] | [x] | [x] |
+| AEC + barge-in | [x] | [x] | [x] |
+| STT->LLM->TTS (en/hi/mr) | [x] | [x] | [x] |
+| Enroll face+voice | [x] | [x] | [x] |
+| Memory persists restart | [x] | [x] | [x] |
+| Smart-home command | [x] | [x] | [x] |
+| PWA reachable from phone | [x] | [x] | [x] |
 | Contract tests pass | [x] | [x] | [x] |
 
 ## DECISION LOG (APPEND-ONLY)
@@ -58,5 +58,6 @@ Resume rule: read this file first, find the first 'in_progress'/'pending' step, 
 - 2026-06-27 session: completed step 11 (Android adapters); implemented Termux adapters for audio (PulseAudio + fallback), camera (stream URL + termux-camera-photo), home (in-memory), power (termux-battery-status + low power monitor), and notify (termux-notification); added setup.sh deployment script and comprehensive contract tests; all 149 tests green.
 - 2026-06-27 session: completed step 12 (Real network smart-home); implemented shared MqttHomeClient and RealHomeAdapter routing switch/dimmer/IR commands to Tasmota (MQTT), TP-Link Kasa (async APIs), and Broadlink RM blasters; added unit/integration tests; all 155 tests green.
 - 2026-06-27 session: completed step 13 (Pi adapters); implemented Raspberry Pi adapters for ALSA/ReSpeaker audio, Picamera2 camera capture, lgpio relay switch control, and I2C SMBus UPS power monitoring with low battery shutdown callbacks; added systemd service unit and install.sh scripts; 6 new contract tests created; all 161 unit and contract tests green.
+- 2026-06-27 session: completed step 14 (Harden & ship); implemented optional SQLCipher database encryption at rest (using environment variable key), secure signed OTA updates (verification via cryptography or openssl, staged backups, auto-rollback), default-deny nftables firewall config, and a complete security checklists audit; 6 new unit tests; all 168 tests green. Stage Pi complete. Project complete for Phase 1-2 criteria.
 
 

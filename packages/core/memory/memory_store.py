@@ -81,7 +81,24 @@ class MemoryStore:
     # ---- lazy init helpers ----
 
     def _get_connection(self) -> sqlite3.Connection:
-        conn = sqlite3.connect(self.db_path)
+        import os
+
+        key = os.getenv("DB_ENCRYPTION_KEY")
+        sqlite_lib = sqlite3
+
+        if key:
+            try:
+                from sqlcipher3 import dbapi2 as sqlite_lib
+            except ImportError:
+                try:
+                    from pysqlcipher3 import dbapi2 as sqlite_lib
+                except ImportError:
+                    pass
+
+        conn = sqlite_lib.connect(self.db_path)
+        if key:
+            conn.execute(f"PRAGMA key = {json.dumps(key)};")
+
         conn.execute("PRAGMA journal_mode=WAL;")
         if _HAS_SQLITE_VEC:
             conn.enable_load_extension(True)

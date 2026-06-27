@@ -119,3 +119,23 @@ class TestMemoryStore:
         ms._embedder = _make_mock_embedder()
         mid = await ms.store("first entry ever")
         assert isinstance(mid, str)
+
+    @pytest.mark.asyncio
+    async def test_encrypted_database_connection(self, tmp_path: Path) -> None:
+        import os
+        from unittest.mock import MagicMock, patch
+
+        db = str(tmp_path / "encrypted.db")
+        mock_conn = MagicMock()
+
+        with (
+            patch("sqlite3.connect", return_value=mock_conn) as mock_connect,
+            patch.dict(os.environ, {"DB_ENCRYPTION_KEY": "my_passphrase"}),
+        ):
+            ms = MemoryStore(db_path=db)
+            ms._get_connection()
+
+            # Assert connect was called with db path
+            mock_connect.assert_called_once_with(db)
+            # Assert PRAGMA key was executed on the connection
+            mock_conn.execute.assert_any_call('PRAGMA key = "my_passphrase";')
