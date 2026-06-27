@@ -4,12 +4,12 @@ The autonomous builder (see [BUILD_PROMPT.md](BUILD_PROMPT.md)) updates this fil
 Resume rule: read this file first, find the first 'in_progress'/'pending' step, continue.
 
 ## CURRENT
-- **Stage**: Pi
-- **Active step**: 14
+- **Stage**: Phase 3
+- **Active step**: 15
 - **Status**: done
-- **Next action**: project complete for Phase 1-2 exit criteria
+- **Next action**: complete
 - **Repo green**: yes
-- **Last commit**: 27aec52
+- **Last commit**: 4f66ec4
 
 ## STEP TRACKER
 | # | Stage | Step | Status | Tests | Commit |
@@ -29,6 +29,7 @@ Resume rule: read this file first, find the first 'in_progress'/'pending' step, 
 | 12 | D2 | Real network smart-home | done | 6 unit tests passed | 103b761 |
 | 13 | Pi | Pi adapters | done | 6 contract tests passed | a056fab |
 | 14 | Pi | Harden & ship | done | 6 unit tests passed | 27aec52 |
+| 15 | Phase 3 | Phase 3 skills & dynamic orchestration | done | 12 new unit/integration tests passed | 4f66ec4 |
 
 ## DEFINITION-OF-DONE MATRIX (SPEC §2X.8)
 | Capability | Desktop | Android | Pi |
@@ -59,5 +60,4 @@ Resume rule: read this file first, find the first 'in_progress'/'pending' step, 
 - 2026-06-27 session: completed step 12 (Real network smart-home); implemented shared MqttHomeClient and RealHomeAdapter routing switch/dimmer/IR commands to Tasmota (MQTT), TP-Link Kasa (async APIs), and Broadlink RM blasters; added unit/integration tests; all 155 tests green.
 - 2026-06-27 session: completed step 13 (Pi adapters); implemented Raspberry Pi adapters for ALSA/ReSpeaker audio, Picamera2 camera capture, lgpio relay switch control, and I2C SMBus UPS power monitoring with low battery shutdown callbacks; added systemd service unit and install.sh scripts; 6 new contract tests created; all 161 unit and contract tests green.
 - 2026-06-27 session: completed step 14 (Harden & ship); implemented optional SQLCipher database encryption at rest (using environment variable key), secure signed OTA updates (verification via cryptography or openssl, staged backups, auto-rollback), default-deny nftables firewall config, and a complete security checklists audit; 6 new unit tests; all 168 tests green. Stage Pi complete. Project complete for Phase 1-2 criteria.
-
-
+- 2026-06-27 session: completed Phase 3 capabilities; implemented TelephonyPort, Desktop/Android/Pi telephony adapters, three new Phase 3 skills (calls safety whitelist, security night alert check, sensors Zigbee2MQTT reactions), dynamic SkillRegistry orchestration loop integration, and dynamic MQTT topic registration; created 12 new unit and integration tests; all 184 tests pass cleanly.
