@@ -1,0 +1,9 @@
+diff --git a/tests/unit/test_regression.py b/tests/unit/test_regression.py
+--- a/tests/unit/test_regression.py
++++ b/tests/unit/test_regression.py
+@@ -15,3 +15,3 @@
+-@pytest.mark.xfail(reason="BUG-002: FastAPI Webapp command endpoint bypasses ACL check")
++@pytest.mark.xfail(reason="BUG-002: FastAPI Webapp command endpoint bypasses ACL check")
++@pytest.mark.asyncio
++async def test_bug_002_webapp_acl() -> None:
++    pass

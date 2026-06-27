@@ -1,0 +1,68 @@
+{
+  "schema_version": "1.5.2",
+  "reqs": {
+    "REQ-001": {
+      "pattern": "whitelist",
+      "items": ["home_control", "memory_store"],
+      "sites": ["voice_orchestrator"],
+      "cells": [
+        {
+          "cell_id": "REQ-001/cell-home_control-voice_orchestrator",
+          "item": "home_control",
+          "site": "voice_orchestrator",
+          "present": false,
+          "evidence": "apps/familyrobot/main_loop.py:150-160"
+        },
+        {
+          "cell_id": "REQ-001/cell-memory_store-voice_orchestrator",
+          "item": "memory_store",
+          "site": "voice_orchestrator",
+          "present": false,
+          "evidence": "apps/familyrobot/main_loop.py:150-160"
+        }
+      ]
+    },
+    "REQ-002": {
+      "pattern": "whitelist",
+      "items": ["home_control", "memory_store"],
+      "sites": ["webapp"],
+      "cells": [
+        {
+          "cell_id": "REQ-002/cell-home_control-webapp",
+          "item": "home_control",
+          "site": "webapp",
+          "present": false,
+          "evidence": "packages/core/webapp/app.py:157-177"
+        },
+        {
+          "cell_id": "REQ-002/cell-memory_store-webapp",
+          "item": "memory_store",
+          "site": "webapp",
+          "present": false,
+          "evidence": "packages/core/webapp/app.py:205-225"
+        }
+      ]
+    },
+    "REQ-005": {
+      "pattern": "parity",
+      "items": ["battery_monitoring"],
+      "sites": ["android", "raspberrypi"],
+      "cells": [
+        {
+          "cell_id": "REQ-005/cell-battery_monitoring-android",
+          "item": "battery_monitoring",
+          "site": "android",
+          "present": true,
+          "evidence": "packages/adapters/android/power.py:73"
+        },
+        {
+          "cell_id": "REQ-005/cell-battery_monitoring-raspberrypi",
+          "item": "battery_monitoring",
+          "site": "raspberrypi",
+          "present": false,
+          "evidence": "packages/adapters/raspberrypi/power.py:73-85"
+        }
+      ]
+    }
+  }
+}

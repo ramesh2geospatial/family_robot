@@ -1,0 +1,831 @@
+{
+  "schema_version": "1.0",
+  "timestamp_start": "2026-06-27T04:09:10Z",
+  "provenance": "git-ls-files",
+  "files": [
+    {
+      "path": ".agents/skills/familyrobot-dev/SKILL.md",
+      "role": "skill-prose",
+      "size_bytes": 1451,
+      "rationale": "Instruction/prose entry point for the agent."
+    },
+    {
+      "path": ".gitignore",
+      "role": "code",
+      "size_bytes": 279,
+      "rationale": "Python source file containing project code."
+    },
+    {
+      "path": "AGENTS.md",
+      "role": "skill-prose",
+      "size_bytes": 2700,
+      "rationale": "Instruction/prose entry point for the agent."
+    },
+    {
+      "path": "BUILD_PROMPT.md",
+      "role": "skill-prose",
+      "size_bytes": 4663,
+      "rationale": "Instruction/prose entry point for the agent."
+    },
+    {
+      "path": "BUILD_STATE.md",
+      "role": "skill-prose",
+      "size_bytes": 5945,
+      "rationale": "Instruction/prose entry point for the agent."
+    },
+    {
+      "path": "README.md",
+      "role": "docs",
+      "size_bytes": 102,
+      "rationale": "Documentation markdown file."
+    },
+    {
+      "path": "apps/__init__.py",
+      "role": "code",
+      "size_bytes": 17,
+      "rationale": "Python source file containing project code."
+    },
+    {
+      "path": "apps/familyrobot/__init__.py",
+      "role": "code",
+      "size_bytes": 29,
+      "rationale": "Python source file containing project code."
+    },
+    {
+      "path": "apps/familyrobot/__main__.py",
+      "role": "code",
+      "size_bytes": 3852,
+      "rationale": "Python source file containing project code."
+    },
+    {
+      "path": "apps/familyrobot/main_loop.py",
+      "role": "code",
+      "size_bytes": 7423,
+      "rationale": "Python source file containing project code."
+    },
+    {
+      "path": "apps/familyrobot/wiring.py",
+      "role": "code",
+      "size_bytes": 4276,
+      "rationale": "Python source file containing project code."
+    },
+    {
+      "path": "config/android.yaml",
+      "role": "config",
+      "size_bytes": 320,
+      "rationale": "Configuration file."
+    },
+    {
+      "path": "config/base.yaml",
+      "role": "config",
+      "size_bytes": 317,
+      "rationale": "Configuration file."
+    },
+    {
+      "path": "config/desktop.yaml",
+      "role": "config",
+      "size_bytes": 320,
+      "rationale": "Configuration file."
+    },
+    {
+      "path": "config/raspberrypi.yaml",
+      "role": "config",
+      "size_bytes": 323,
+      "rationale": "Configuration file."
+    },
+    {
+      "path": "deploy/android-termux/setup.sh",
+      "role": "config",
+      "size_bytes": 2702,
+      "rationale": "Deployment script or configuration."
+    },
+    {
+      "path": "deploy/docker/Dockerfile",
+      "role": "config",
+      "size_bytes": 2251,
+      "rationale": "Deployment script or configuration."
+    },
+    {
+      "path": "deploy/docker/README.md",
+      "role": "docs",
+      "size_bytes": 1080,
+      "rationale": "Documentation markdown file."
+    },
+    {
+      "path": "deploy/docker/docker-compose.yml",
+      "role": "config",
+      "size_bytes": 2029,
+      "rationale": "Configuration file."
+    },
+    {
+      "path": "deploy/docker/mosquitto.conf",
+      "role": "config",
+      "size_bytes": 266,
+      "rationale": "Configuration file."
+    },
+    {
+      "path": "deploy/raspberrypi/familyrobot.service",
+      "role": "config",
+      "size_bytes": 468,
+      "rationale": "Deployment script or configuration."
+    },
+    {
+      "path": "deploy/raspberrypi/install.sh",
+      "role": "config",
+      "size_bytes": 2096,
+      "rationale": "Deployment script or configuration."
+    },
+    {
+      "path": "deploy/raspberrypi/nftables.conf",
+      "role": "config",
+      "size_bytes": 1255,
+      "rationale": "Configuration file."
+    },
+    {
+      "path": "docs/rules/architecture.md",
+      "role": "docs",
+      "size_bytes": 5239,
+      "rationale": "Documentation markdown file."
+    },
+    {
+      "path": "docs/rules/implementation-plan.md",
+      "role": "docs",
+      "size_bytes": 5777,
+      "rationale": "Documentation markdown file."
+    },
+    {
+      "path": "docs/rules/progress-ledger.md",
+      "role": "docs",
+      "size_bytes": 3703,
+      "rationale": "Documentation markdown file."
+    },
+    {
+      "path": "docs/rules/security-checklist.md",
+      "role": "docs",
+      "size_bytes": 2591,
+      "rationale": "Documentation markdown file."
+    },
+    {
+      "path": "docs/rules/skills-catalog.md",
+      "role": "docs",
+      "size_bytes": 3585,
+      "rationale": "Documentation markdown file."
+    },
+    {
+      "path": "docs/rules/tech-stack.md",
+      "role": "docs",
+      "size_bytes": 3667,
+      "rationale": "Documentation markdown file."
+    },
+    {
+      "path": "docs/rules/testing-strategy.md",
+      "role": "docs",
+      "size_bytes": 4560,
+      "rationale": "Documentation markdown file."
+    },
+    {
+      "path": "docs/specifications.md",
+      "role": "formal-spec",
+      "size_bytes": 37376,
+      "rationale": "Formal specification document for the FamilyRobot system."
+    },
+    {
+      "path": "hardware/FamilyRobot_BOM.md",
+      "role": "docs",
+      "size_bytes": 12280,
+      "rationale": "Documentation markdown file."
+    },
+    {
+      "path": "packages/__init__.py",
+      "role": "code",
+      "size_bytes": 21,
+      "rationale": "Python source file containing project code."
+    },
+    {
+      "path": "packages/adapters/__init__.py",
+      "role": "code",
+      "size_bytes": 30,
+      "rationale": "Python source file containing project code."
+    },
+    {
+      "path": "packages/adapters/android/__init__.py",
+      "role": "code",
+      "size_bytes": 514,
+      "rationale": "Python source file containing project code."
+    },
+    {
+      "path": "packages/adapters/android/audio.py",
+      "role": "code",
+      "size_bytes": 3967,
+      "rationale": "Python source file containing project code."
+    },
+    {
+      "path": "packages/adapters/android/camera.py",
+      "role": "code",
+      "size_bytes": 4292,
+      "rationale": "Python source file containing project code."
+    },
+    {
+      "path": "packages/adapters/android/home.py",
+      "role": "code",
+      "size_bytes": 1604,
+      "rationale": "Python source file containing project code."
+    },
+    {
+      "path": "packages/adapters/android/notify.py",
+      "role": "code",
+      "size_bytes": 1146,
+      "rationale": "Python source file containing project code."
+    },
+    {
+      "path": "packages/adapters/android/power.py",
+      "role": "code",
+      "size_bytes": 3023,
+      "rationale": "Python source file containing project code."
+    },
+    {
+      "path": "packages/adapters/desktop/__init__.py",
+      "role": "code",
+      "size_bytes": 505,
+      "rationale": "Python source file containing project code."
+    },
+    {
+      "path": "packages/adapters/desktop/audio.py",
+      "role": "code",
+      "size_bytes": 3146,
+      "rationale": "Python source file containing project code."
+    },
+    {
+      "path": "packages/adapters/desktop/camera.py",
+      "role": "code",
+      "size_bytes": 1372,
+      "rationale": "Python source file containing project code."
+    },
+    {
+      "path": "packages/adapters/desktop/home.py",
+      "role": "code",
+      "size_bytes": 1340,
+      "rationale": "Python source file containing project code."
+    },
+    {
+      "path": "packages/adapters/desktop/notify.py",
+      "role": "code",
+      "size_bytes": 397,
+      "rationale": "Python source file containing project code."
+    },
+    {
+      "path": "packages/adapters/desktop/power.py",
+      "role": "code",
+      "size_bytes": 536,
+      "rationale": "Python source file containing project code."
+    },
+    {
+      "path": "packages/adapters/raspberrypi/__init__.py",
+      "role": "code",
+      "size_bytes": 496,
+      "rationale": "Python source file containing project code."
+    },
+    {
+      "path": "packages/adapters/raspberrypi/audio.py",
+      "role": "code",
+      "size_bytes": 2113,
+      "rationale": "Python source file containing project code."
+    },
+    {
+      "path": "packages/adapters/raspberrypi/camera.py",
+      "role": "code",
+      "size_bytes": 2815,
+      "rationale": "Python source file containing project code."
+    },
+    {
+      "path": "packages/adapters/raspberrypi/home.py",
+      "role": "code",
+      "size_bytes": 3470,
+      "rationale": "Python source file containing project code."
+    },
+    {
+      "path": "packages/adapters/raspberrypi/notify.py",
+      "role": "code",
+      "size_bytes": 522,
+      "rationale": "Python source file containing project code."
+    },
+    {
+      "path": "packages/adapters/raspberrypi/power.py",
+      "role": "code",
+      "size_bytes": 2995,
+      "rationale": "Python source file containing project code."
+    },
+    {
+      "path": "packages/core/__init__.py",
+      "role": "code",
+      "size_bytes": 26,
+      "rationale": "Python source file containing project code."
+    },
+    {
+      "path": "packages/core/cognition/__init__.py",
+      "role": "code",
+      "size_bytes": 263,
+      "rationale": "Python source file containing project code."
+    },
+    {
+      "path": "packages/core/cognition/intent_router.py",
+      "role": "code",
+      "size_bytes": 5886,
+      "rationale": "Python source file containing project code."
+    },
+    {
+      "path": "packages/core/cognition/llm_client.py",
+      "role": "code",
+      "size_bytes": 2862,
+      "rationale": "Python source file containing project code."
+    },
+    {
+      "path": "packages/core/config.py",
+      "role": "code",
+      "size_bytes": 2798,
+      "rationale": "Python source file containing project code."
+    },
+    {
+      "path": "packages/core/expression/__init__.py",
+      "role": "code",
+      "size_bytes": 260,
+      "rationale": "Python source file containing project code."
+    },
+    {
+      "path": "packages/core/expression/response_formatter.py",
+      "role": "code",
+      "size_bytes": 1784,
+      "rationale": "Python source file containing project code."
+    },
+    {
+      "path": "packages/core/expression/tts_engine.py",
+      "role": "code",
+      "size_bytes": 4313,
+      "rationale": "Python source file containing project code."
+    },
+    {
+      "path": "packages/core/governance/__init__.py",
+      "role": "code",
+      "size_bytes": 595,
+      "rationale": "Python source file containing project code."
+    },
+    {
+      "path": "packages/core/governance/acl.py",
+      "role": "code",
+      "size_bytes": 5610,
+      "rationale": "Python source file containing project code."
+    },
+    {
+      "path": "packages/core/governance/audit_log.py",
+      "role": "code",
+      "size_bytes": 2332,
+      "rationale": "Python source file containing project code."
+    },
+    {
+      "path": "packages/core/governance/conversation_log.py",
+      "role": "code",
+      "size_bytes": 2397,
+      "rationale": "Python source file containing project code."
+    },
+    {
+      "path": "packages/core/governance/identity.py",
+      "role": "code",
+      "size_bytes": 2442,
+      "rationale": "Python source file containing project code."
+    },
+    {
+      "path": "packages/core/governance/updater.py",
+      "role": "code",
+      "size_bytes": 5975,
+      "rationale": "Python source file containing project code."
+    },
+    {
+      "path": "packages/core/home/__init__.py",
+      "role": "code",
+      "size_bytes": 225,
+      "rationale": "Python source file containing project code."
+    },
+    {
+      "path": "packages/core/home/adapter.py",
+      "role": "code",
+      "size_bytes": 7491,
+      "rationale": "Python source file containing project code."
+    },
+    {
+      "path": "packages/core/home/mqtt_client.py",
+      "role": "code",
+      "size_bytes": 6026,
+      "rationale": "Python source file containing project code."
+    },
+    {
+      "path": "packages/core/memory/__init__.py",
+      "role": "code",
+      "size_bytes": 153,
+      "rationale": "Python source file containing project code."
+    },
+    {
+      "path": "packages/core/memory/memory_store.py",
+      "role": "code",
+      "size_bytes": 6924,
+      "rationale": "Python source file containing project code."
+    },
+    {
+      "path": "packages/core/perception/__init__.py",
+      "role": "code",
+      "size_bytes": 342,
+      "rationale": "Python source file containing project code."
+    },
+    {
+      "path": "packages/core/perception/stt.py",
+      "role": "code",
+      "size_bytes": 2104,
+      "rationale": "Python source file containing project code."
+    },
+    {
+      "path": "packages/core/perception/vad.py",
+      "role": "code",
+      "size_bytes": 2241,
+      "rationale": "Python source file containing project code."
+    },
+    {
+      "path": "packages/core/perception/wakeword.py",
+      "role": "code",
+      "size_bytes": 2779,
+      "rationale": "Python source file containing project code."
+    },
+    {
+      "path": "packages/core/ports/__init__.py",
+      "role": "code",
+      "size_bytes": 32,
+      "rationale": "Python source file containing project code."
+    },
+    {
+      "path": "packages/core/ports/audio.py",
+      "role": "code",
+      "size_bytes": 654,
+      "rationale": "Python source file containing project code."
+    },
+    {
+      "path": "packages/core/ports/camera.py",
+      "role": "code",
+      "size_bytes": 482,
+      "rationale": "Python source file containing project code."
+    },
+    {
+      "path": "packages/core/ports/home.py",
+      "role": "code",
+      "size_bytes": 699,
+      "rationale": "Python source file containing project code."
+    },
+    {
+      "path": "packages/core/ports/notify.py",
+      "role": "code",
+      "size_bytes": 280,
+      "rationale": "Python source file containing project code."
+    },
+    {
+      "path": "packages/core/ports/power.py",
+      "role": "code",
+      "size_bytes": 477,
+      "rationale": "Python source file containing project code."
+    },
+    {
+      "path": "packages/core/skills/__init__.py",
+      "role": "code",
+      "size_bytes": 631,
+      "rationale": "Python source file containing project code."
+    },
+    {
+      "path": "packages/core/skills/assistant/__init__.py",
+      "role": "code",
+      "size_bytes": 26,
+      "rationale": "Python source file containing project code."
+    },
+    {
+      "path": "packages/core/skills/assistant/manifest.yaml",
+      "role": "config",
+      "size_bytes": 240,
+      "rationale": "Configuration file."
+    },
+    {
+      "path": "packages/core/skills/assistant/skill.py",
+      "role": "code",
+      "size_bytes": 1474,
+      "rationale": "Python source file containing project code."
+    },
+    {
+      "path": "packages/core/skills/base.py",
+      "role": "code",
+      "size_bytes": 1473,
+      "rationale": "Python source file containing project code."
+    },
+    {
+      "path": "packages/core/skills/lights/__init__.py",
+      "role": "code",
+      "size_bytes": 23,
+      "rationale": "Python source file containing project code."
+    },
+    {
+      "path": "packages/core/skills/lights/manifest.yaml",
+      "role": "config",
+      "size_bytes": 854,
+      "rationale": "Configuration file."
+    },
+    {
+      "path": "packages/core/skills/lights/skill.py",
+      "role": "code",
+      "size_bytes": 1866,
+      "rationale": "Python source file containing project code."
+    },
+    {
+      "path": "packages/core/skills/memory_admin/__init__.py",
+      "role": "code",
+      "size_bytes": 29,
+      "rationale": "Python source file containing project code."
+    },
+    {
+      "path": "packages/core/skills/memory_admin/manifest.yaml",
+      "role": "config",
+      "size_bytes": 738,
+      "rationale": "Configuration file."
+    },
+    {
+      "path": "packages/core/skills/memory_admin/skill.py",
+      "role": "code",
+      "size_bytes": 2736,
+      "rationale": "Python source file containing project code."
+    },
+    {
+      "path": "packages/core/skills/registry.py",
+      "role": "code",
+      "size_bytes": 1196,
+      "rationale": "Python source file containing project code."
+    },
+    {
+      "path": "packages/core/skills/reminders/__init__.py",
+      "role": "code",
+      "size_bytes": 26,
+      "rationale": "Python source file containing project code."
+    },
+    {
+      "path": "packages/core/skills/reminders/manifest.yaml",
+      "role": "config",
+      "size_bytes": 704,
+      "rationale": "Configuration file."
+    },
+    {
+      "path": "packages/core/skills/reminders/skill.py",
+      "role": "code",
+      "size_bytes": 2791,
+      "rationale": "Python source file containing project code."
+    },
+    {
+      "path": "packages/core/webapp/__init__.py",
+      "role": "code",
+      "size_bytes": 168,
+      "rationale": "Python source file containing project code."
+    },
+    {
+      "path": "packages/core/webapp/app.py",
+      "role": "code",
+      "size_bytes": 8793,
+      "rationale": "Python source file containing project code."
+    },
+    {
+      "path": "packages/core/webapp/static/app.js",
+      "role": "code",
+      "size_bytes": 7416,
+      "rationale": "Python source file containing project code."
+    },
+    {
+      "path": "packages/core/webapp/static/index.html",
+      "role": "code",
+      "size_bytes": 6219,
+      "rationale": "Python source file containing project code."
+    },
+    {
+      "path": "packages/core/webapp/static/manifest.json",
+      "role": "config",
+      "size_bytes": 534,
+      "rationale": "Configuration file."
+    },
+    {
+      "path": "packages/core/webapp/static/style.css",
+      "role": "code",
+      "size_bytes": 7583,
+      "rationale": "Python source file containing project code."
+    },
+    {
+      "path": "packages/core/webapp/static/sw.js",
+      "role": "code",
+      "size_bytes": 1349,
+      "rationale": "Python source file containing project code."
+    },
+    {
+      "path": "prompts/project_brief_v2.md",
+      "role": "docs",
+      "size_bytes": 21554,
+      "rationale": "Documentation markdown file."
+    },
+    {
+      "path": "pyproject.toml",
+      "role": "config",
+      "size_bytes": 1832,
+      "rationale": "Configuration file."
+    },
+    {
+      "path": "scratch/download_model.py",
+      "role": "code",
+      "size_bytes": 1709,
+      "rationale": "Scratch/temporary script."
+    },
+    {
+      "path": "scratch/test_llm.py",
+      "role": "code",
+      "size_bytes": 856,
+      "rationale": "Scratch/temporary script."
+    },
+    {
+      "path": "scratch/test_perception_pipeline.py",
+      "role": "code",
+      "size_bytes": 2983,
+      "rationale": "Scratch/temporary script."
+    },
+    {
+      "path": "scratch/test_tts.py",
+      "role": "code",
+      "size_bytes": 833,
+      "rationale": "Scratch/temporary script."
+    },
+    {
+      "path": "scratch/view_conversations.py",
+      "role": "code",
+      "size_bytes": 1771,
+      "rationale": "Scratch/temporary script."
+    },
+    {
+      "path": "test_aurdino/board_specifications.md",
+      "role": "docs",
+      "size_bytes": 3256,
+      "rationale": "Documentation markdown file."
+    },
+    {
+      "path": "test_aurdino/test_aurdino.ino",
+      "role": "code",
+      "size_bytes": 801,
+      "rationale": "Arduino code for hardware verification."
+    },
+    {
+      "path": "tests/business/.gitkeep",
+      "role": "fixture",
+      "size_bytes": 33,
+      "rationale": "Sentinel file to keep directory in Git."
+    },
+    {
+      "path": "tests/conftest.py",
+      "role": "test",
+      "size_bytes": 675,
+      "rationale": "Unit, contract, or functional test file."
+    },
+    {
+      "path": "tests/contracts/.gitkeep",
+      "role": "fixture",
+      "size_bytes": 33,
+      "rationale": "Sentinel file to keep directory in Git."
+    },
+    {
+      "path": "tests/contracts/test_android_adapters.py",
+      "role": "test",
+      "size_bytes": 10017,
+      "rationale": "Unit, contract, or functional test file."
+    },
+    {
+      "path": "tests/contracts/test_audio_port.py",
+      "role": "test",
+      "size_bytes": 1997,
+      "rationale": "Unit, contract, or functional test file."
+    },
+    {
+      "path": "tests/contracts/test_camera_port.py",
+      "role": "test",
+      "size_bytes": 2298,
+      "rationale": "Unit, contract, or functional test file."
+    },
+    {
+      "path": "tests/contracts/test_home_port.py",
+      "role": "test",
+      "size_bytes": 1257,
+      "rationale": "Unit, contract, or functional test file."
+    },
+    {
+      "path": "tests/contracts/test_notify_port.py",
+      "role": "test",
+      "size_bytes": 766,
+      "rationale": "Unit, contract, or functional test file."
+    },
+    {
+      "path": "tests/contracts/test_pi_adapters.py",
+      "role": "test",
+      "size_bytes": 6960,
+      "rationale": "Unit, contract, or functional test file."
+    },
+    {
+      "path": "tests/contracts/test_power_port.py",
+      "role": "test",
+      "size_bytes": 1068,
+      "rationale": "Unit, contract, or functional test file."
+    },
+    {
+      "path": "tests/functional/.gitkeep",
+      "role": "fixture",
+      "size_bytes": 35,
+      "rationale": "Sentinel file to keep directory in Git."
+    },
+    {
+      "path": "tests/regression/.gitkeep",
+      "role": "fixture",
+      "size_bytes": 35,
+      "rationale": "Sentinel file to keep directory in Git."
+    },
+    {
+      "path": "tests/unit/test_cognition.py",
+      "role": "test",
+      "size_bytes": 6691,
+      "rationale": "Unit, contract, or functional test file."
+    },
+    {
+      "path": "tests/unit/test_config_wiring.py",
+      "role": "test",
+      "size_bytes": 1946,
+      "rationale": "Unit, contract, or functional test file."
+    },
+    {
+      "path": "tests/unit/test_expression.py",
+      "role": "test",
+      "size_bytes": 3988,
+      "rationale": "Unit, contract, or functional test file."
+    },
+    {
+      "path": "tests/unit/test_governance.py",
+      "role": "test",
+      "size_bytes": 9835,
+      "rationale": "Unit, contract, or functional test file."
+    },
+    {
+      "path": "tests/unit/test_home_integration.py",
+      "role": "test",
+      "size_bytes": 7117,
+      "rationale": "Unit, contract, or functional test file."
+    },
+    {
+      "path": "tests/unit/test_main_loop.py",
+      "role": "test",
+      "size_bytes": 7596,
+      "rationale": "Unit, contract, or functional test file."
+    },
+    {
+      "path": "tests/unit/test_memory.py",
+      "role": "test",
+      "size_bytes": 5099,
+      "rationale": "Unit, contract, or functional test file."
+    },
+    {
+      "path": "tests/unit/test_perception.py",
+      "role": "test",
+      "size_bytes": 5180,
+      "rationale": "Unit, contract, or functional test file."
+    },
+    {
+      "path": "tests/unit/test_skills.py",
+      "role": "test",
+      "size_bytes": 9865,
+      "rationale": "Unit, contract, or functional test file."
+    },
+    {
+      "path": "tests/unit/test_smoke.py",
+      "role": "test",
+      "size_bytes": 144,
+      "rationale": "Unit, contract, or functional test file."
+    },
+    {
+      "path": "tests/unit/test_updater.py",
+      "role": "test",
+      "size_bytes": 5851,
+      "rationale": "Unit, contract, or functional test file."
+    },
+    {
+      "path": "tests/unit/test_webapp.py",
+      "role": "test",
+      "size_bytes": 6721,
+      "rationale": "Unit, contract, or functional test file."
+    }
+  ],
+  "breakdown": {
+    "percentages": {
+      "skill_share": 10.0,
+      "code_share": 70.0,
+      "tool_share": 10.0,
+      "other_share": 10.0
+    }
+  }
+}

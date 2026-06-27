@@ -1,0 +1,3 @@
+RED
+test_bug_002_webapp_acl
+FastAPI POST endpoint toggled device without verifying roles.

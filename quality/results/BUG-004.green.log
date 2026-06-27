@@ -1,0 +1,3 @@
+GREEN
+test_bug_004_fail_closed
+Undefined permission string correctly raises warning and returns allowed=False (fail-closed check).

@@ -1,0 +1,32 @@
+{
+  "schema_version": "1.1",
+  "skill_version": "1.5.6",
+  "date": "2026-06-27",
+  "project": "familyrobot",
+  "recommendation": "FIX BEFORE MERGE",
+  "groups": [
+    {
+      "name": "access_control",
+      "result": "fail",
+      "description": "Bypasses in orchestrator and webapp API"
+    },
+    {
+      "name": "power_monitoring",
+      "result": "fail",
+      "description": "UPS charging loop issue on Raspberry Pi"
+    }
+  ],
+  "summary": {
+    "total_groups": 2,
+    "passed": 0,
+    "failed": 2,
+    "skipped": 0
+  },
+  "uc_coverage": {
+    "UC-01": "covered_fail",
+    "UC-02": "covered_fail",
+    "UC-03": "covered_fail",
+    "UC-04": "not_mapped",
+    "UC-05": "not_mapped"
+  }
+}
