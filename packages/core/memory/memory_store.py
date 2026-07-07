@@ -25,8 +25,14 @@ logger = logging.getLogger(__name__)
 _HAS_SQLITE_VEC = False
 try:
     import sqlite_vec  # type: ignore[import-untyped]
+    import sqlite3
 
-    _HAS_SQLITE_VEC = True
+    if hasattr(sqlite3.Connection, "enable_load_extension"):
+        _HAS_SQLITE_VEC = True
+    else:
+        logger.info(
+            "sqlite3 lacks extension loading support; using brute-force fallback."
+        )
 except ImportError:
     logger.info("sqlite-vec not available; using brute-force cosine fallback.")
 
@@ -70,58 +76,31 @@ class MemoryStore:
 
     def __init__(
         self,
-        db_path: str = "memory.db",
+        db_path: Optional[str] = None,
         embedding_model: str = "all-MiniLM-L6-v2",
+        *,
+        persistence: Optional[PersistenceContext] = None,
     ) -> None:
-        self.db_path = db_path
+        from packages.core.memory.persistence import PersistenceContext
+
+        if persistence is not None:
+            self.persistence = persistence
+        else:
+            self.persistence = PersistenceContext(db_path or "data/familyrobot.db")
         self._embedding_model_name = embedding_model
         self._embedder: Optional[object] = None
-        self._db_ready = False
+
+    @property
+    def db_path(self) -> str:
+        return self.persistence.db_path
 
     # ---- lazy init helpers ----
 
     def _get_connection(self) -> sqlite3.Connection:
-        import os
-
-        key = os.getenv("DB_ENCRYPTION_KEY")
-        sqlite_lib = sqlite3
-
-        if key:
-            try:
-                from sqlcipher3 import dbapi2 as sqlite_lib
-            except ImportError:
-                try:
-                    from pysqlcipher3 import dbapi2 as sqlite_lib
-                except ImportError:
-                    pass
-
-        conn = sqlite_lib.connect(self.db_path)
-        if key:
-            conn.execute(f"PRAGMA key = {json.dumps(key)};")
-
-        conn.execute("PRAGMA journal_mode=WAL;")
-        if _HAS_SQLITE_VEC:
-            conn.enable_load_extension(True)
-            sqlite_vec.load(conn)
-        return conn
+        return self.persistence._get_raw_connection()
 
     def _ensure_db(self) -> None:
-        if self._db_ready:
-            return
-        Path(self.db_path).parent.mkdir(parents=True, exist_ok=True)
-        conn = self._get_connection()
-        try:
-            conn.execute(self._CREATE_TABLE)
-            if _HAS_SQLITE_VEC:
-                # Create virtual table for fast KNN search
-                conn.execute(
-                    "CREATE VIRTUAL TABLE IF NOT EXISTS memory_vec "
-                    "USING vec0(id TEXT PRIMARY KEY, embedding float[384])"
-                )
-            conn.commit()
-        finally:
-            conn.close()
-        self._db_ready = True
+        self.persistence._ensure_db()
 
     def _ensure_embedder(self) -> None:
         if self._embedder is not None:

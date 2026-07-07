@@ -138,17 +138,18 @@ async def lifespan(app: FastAPI):
             IdentityStore,
             Role,
         )
-        from packages.core.memory import MemoryStore
+        from packages.core.memory import MemoryStore, PersistenceContext
 
         platform = os.environ.get("FAMILYROBOT_PLATFORM", "desktop")
         config = load_config(platform=platform)
 
         s.config = config
         s.home = wire_components(config).home
-        s.memory = MemoryStore(db_path=config.memory_db_path)
-        s.identity_store = IdentityStore()
+        persistence = PersistenceContext(db_path=config.memory_db_path)
+        s.memory = MemoryStore(persistence=persistence)
+        s.identity_store = IdentityStore(persistence=persistence)
         s.acl = ACL()
-        s.audit_log = AuditLog(log_path="data/audit.jsonl")
+        s.audit_log = AuditLog(log_path="data/audit.jsonl", persistence=persistence)
 
         # Enroll default mock users
         s.identity_store.enroll(

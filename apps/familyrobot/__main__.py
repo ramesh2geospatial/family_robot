@@ -27,7 +27,7 @@ from packages.core.governance import (
     IdentityStore,
     Role,
 )
-from packages.core.memory import MemoryStore
+from packages.core.memory import MemoryStore, PersistenceContext
 from packages.core.media import MediaPlayer
 from packages.core.perception import (
     SpeechToText,
@@ -59,12 +59,15 @@ def _build_components(config: AppConfig) -> dict:
     vad = VoiceActivityDetector()
     stt = SpeechToText()
 
+    # Unified Persistence Context
+    persistence = PersistenceContext(db_path=config.memory_db_path)
+
     # Cognition
     llm = LlamaLLMClient(
         model_path=config.llm_model_path,
     )
     memory = MemoryStore(
-        db_path=config.memory_db_path,
+        persistence=persistence,
     )
     intent_router = IntentRouter(llm=llm)
 
@@ -79,8 +82,8 @@ def _build_components(config: AppConfig) -> dict:
         log_path=config.conversation_log_path,
     )
     acl = ACL()
-    identity_store = IdentityStore()
-    audit_log = AuditLog(log_path="data/audit.jsonl")
+    identity_store = IdentityStore(persistence=persistence)
+    audit_log = AuditLog(log_path="data/audit.jsonl", persistence=persistence)
 
     # Enroll default mock users for ACL verification
     identity_store.enroll(

@@ -99,11 +99,24 @@ class AssistantSkill(BaseSkill):
 
         # 2. Short-Term Conversation History
         user_id = ctx.user_id or "unknown"
-        history = self._get_or_create_history(user_id)
+        memory_port = ctx.ports.get("memory")
+        db = getattr(memory_port, "persistence", None) if memory_port else None
+        from packages.core.memory.persistence import PersistenceContext
 
-        # Session timeout: clear stale context
-        if history and self._is_session_expired(history):
-            history.clear()
+        if db and not isinstance(db, PersistenceContext):
+            db = None
+
+        if db:
+            # Persistent database flow
+            history = self._db_get_history(db, user_id)
+            if history and self._is_db_session_expired(history):
+                self._db_clear_history(db, user_id)
+                history = []
+        else:
+            # In-memory fallback
+            history = self._get_or_create_history(user_id)
+            if history and self._is_session_expired(history):
+                history.clear()
 
         prompt_str = self._build_prompt(history, ctx.raw_text)
 
@@ -114,13 +127,17 @@ class AssistantSkill(BaseSkill):
             )
 
             # Persist this exchange
-            history.append(_ConversationTurn("user", ctx.raw_text))
-            history.append(_ConversationTurn("assistant", response))
-
-            # Trim to max turns (each turn = 2 entries)
-            max_entries = _MAX_HISTORY_TURNS * 2
-            if len(history) > max_entries:
-                del history[: len(history) - max_entries]
+            if db:
+                self._db_save_turn(db, user_id, "user", ctx.raw_text)
+                self._db_save_turn(db, user_id, "assistant", response)
+                max_entries = _MAX_HISTORY_TURNS * 2
+                self._db_trim_history(db, user_id, max_entries)
+            else:
+                history.append(_ConversationTurn("user", ctx.raw_text))
+                history.append(_ConversationTurn("assistant", response))
+                max_entries = _MAX_HISTORY_TURNS * 2
+                if len(history) > max_entries:
+                    del history[: len(history) - max_entries]
 
             return SkillResult(spoken_response=response, success=True)
         except Exception as exc:
@@ -129,6 +146,77 @@ class AssistantSkill(BaseSkill):
                 spoken_response=("I'm sorry, I couldn't process that right now."),
                 success=False,
             )
+
+    # ── DB session history helpers ──
+
+    def _db_get_history(self, db, user_id: str) -> list[_ConversationTurn]:
+        """Load history from the database."""
+        with db.get_connection() as conn:
+            rows = conn.execute(
+                """
+                SELECT role, content, timestamp 
+                FROM conversation_history 
+                WHERE user_id = ? 
+                ORDER BY id ASC
+                """,
+                (user_id,)
+            ).fetchall()
+
+        history = []
+        for role, content, timestamp in rows:
+            turn = _ConversationTurn(role, content)
+            turn.timestamp = timestamp
+            history.append(turn)
+        return history
+
+    def _db_save_turn(self, db, user_id: str, role: str, content: str) -> None:
+        """Save a single conversation turn to the database."""
+        import time
+
+        with db.get_connection() as conn:
+            conn.execute(
+                """
+                INSERT INTO conversation_history (user_id, role, content, timestamp)
+                VALUES (?, ?, ?, ?)
+                """,
+                (user_id, role, content, time.time()),
+            )
+            conn.commit()
+
+    def _db_clear_history(self, db, user_id: str) -> None:
+        """Wipe history for a user in the database."""
+        with db.get_connection() as conn:
+            conn.execute(
+                "DELETE FROM conversation_history WHERE user_id = ?",
+                (user_id,),
+            )
+            conn.commit()
+
+    def _db_trim_history(self, db, user_id: str, max_entries: int) -> None:
+        """Keep only the last max_entries turns for a user in the database."""
+        with db.get_connection() as conn:
+            conn.execute(
+                """
+                DELETE FROM conversation_history 
+                WHERE user_id = ? AND id NOT IN (
+                    SELECT id FROM conversation_history 
+                    WHERE user_id = ? 
+                    ORDER BY id DESC 
+                    LIMIT ?
+                )
+                """,
+                (user_id, user_id, max_entries),
+            )
+            conn.commit()
+
+    def _is_db_session_expired(self, history: list[_ConversationTurn]) -> bool:
+        """True if the last turn is older than the session timeout."""
+        if not history:
+            return False
+        import time
+
+        elapsed = time.time() - history[-1].timestamp
+        return elapsed > self._session_timeout_s
 
     # ── RAG helpers ──
 
