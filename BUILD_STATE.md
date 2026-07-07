@@ -5,11 +5,11 @@ Resume rule: read this file first, find the first 'in_progress'/'pending' step, 
 
 ## CURRENT
 - **Stage**: Phase 2/3 Complete + UX Improvements
-- **Active step**: 20
+- **Active step**: 21
 - **Status**: done
 - **Next action**: none (all improvements complete)
 - **Repo green**: yes
-- **Last commit**: 6cf9c2e
+- **Last commit**: baeeadb
 
 ## STEP TRACKER
 | # | Stage | Step | Status | Tests | Commit |
@@ -35,6 +35,7 @@ Resume rule: read this file first, find the first 'in_progress'/'pending' step, 
 | 18 | Phase 1 | Missing Phase 1 enroll skill | done | 2 new/updated unit tests passed | 4efcd04 |
 | 19 | UX | Music playback: yt-dlp + mpv + song extraction | done | 15 new/updated tests passed (228 total) | 6cf9c2e |
 | 20 | UX | Multilingual conversation consistency & barge-in | done | 3 new unit tests passed (231 total) | 8ae7234 |
+| 21 | UX | Unified database persistence context | done | 231 unit/contract tests passed | baeeadb |
 
 ## DEFINITION-OF-DONE MATRIX (SPEC §2X.8)
 | Capability | Desktop | Android | Pi |
@@ -71,4 +72,5 @@ Resume rule: read this file first, find the first 'in_progress'/'pending' step, 
 - 2026-06-27 session: completed Step 18; implemented missing Phase 1 enroll skill (directing users verbally to the webapp wizard for face/voice capture); updated IntentRouter to classify enrollment intents; added unit tests; all 218 tests passed cleanly.
 - 2026-06-27 session: completed Step 19; upgraded music playback: created packages.core.media.MediaPlayer (yt-dlp URL resolution + mpv headless audio streaming with IPC pause/stop/next); rewrote MusicSkill to use MediaPlayer port with browser fallback; fixed intent router song name extraction to handle Hindi/Marathi patterns ("X play karo", "please play X", "mujhe X sunao"); wired MediaPlayer into main loop ports and startup; added 15 new/updated unit tests; all 228 tests passed cleanly.
 - 2026-06-27 session: completed Step 20; implemented multilingual conversation consistency (detecting user spoken language, adjusting LLM system prompt dynamically, and translating English skill responses to Hindi/Marathi on the fly) and acoustic barge-in playback control (automatically pausing music on wake word detection, then resuming it after answering non-music queries); added 3 new unit tests; all 231 tests passed cleanly.
+- 2026-07-07 session: completed Step 21; implemented a unified database persistence context (PersistenceContext) backing MemoryStore, IdentityStore, AuditLog, and AssistantSkill conversation history; all 231 tests pass.
 
