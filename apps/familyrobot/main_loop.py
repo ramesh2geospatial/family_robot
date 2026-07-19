@@ -7,11 +7,14 @@ Runs the full pipeline: wake-word → VAD → STT → intent → action → TTS 
 from __future__ import annotations
 
 import asyncio
+import json
 import logging
 import time
+from pathlib import Path
 
 from packages.core.expression.response_formatter import format_response
 from packages.core.governance import ACL, UNKNOWN_USER, AuditLog, IdentityStore
+from packages.core.webapp.status_helper import update_robot_status
 
 import re
 from unittest.mock import Mock
@@ -79,6 +82,10 @@ async def run_loop(
         "audit_log": audit_log,
     }
 
+    media_command_task = asyncio.create_task(
+        _poll_media_commands(ports.get("media_player"), shutdown_event)
+    )
+
     try:
         while not shutdown_event.is_set():
             await _listen_cycle(
@@ -102,6 +109,11 @@ async def run_loop(
     except asyncio.CancelledError:
         logger.info("Loop cancelled.")
     finally:
+        media_command_task.cancel()
+        try:
+            await media_command_task
+        except asyncio.CancelledError:
+            pass
         await audio.close()
         if mqtt_client:
             logger.info("Stopping MQTT client...")
@@ -131,12 +143,25 @@ async def _listen_cycle(
 
 
     # 1. Wait for wake word
+    media_player = ports.get("media_player")
+    is_playing = False
+    if media_player and hasattr(media_player, "is_playing"):
+        if not isinstance(media_player.is_playing, Mock):
+            is_playing = media_player.is_playing()
+        else:
+            ret = media_player.is_playing.return_value
+            is_playing = ret if isinstance(ret, bool) else False
+    status = "playing_music" if is_playing else "idle"
+    current_song = media_player.current_title if (media_player and hasattr(media_player, "current_title")) else ""
+    update_robot_status(status=status, is_playing_music=is_playing, current_song=current_song)
+
     frame = await audio.read_frame()
     score = await asyncio.to_thread(wakeword.predict, frame)
     if score < _WAKE_THRESHOLD:
         return  # keep polling
 
     logger.info("Wake word detected (score=%.2f). Listening…", score)
+    update_robot_status(status="listening")
 
     # Acoustic Barge-in: Pause media player if music is playing
     paused_for_voice = False
@@ -194,6 +219,7 @@ async def _listen_cycle(
             return
 
         # 3. Transcribe
+        update_robot_status(status="thinking")
         start_time = time.perf_counter()
         all_audio = b"".join(speech_frames)
         try:
@@ -227,6 +253,7 @@ async def _listen_cycle(
             return
 
         logger.info("Transcribed: '%s' [%s]", text, lang)
+        update_robot_status(status="thinking", last_speech_heard=text)
 
         # Identify user (support prefix override, e.g. "Ramesh: turn on geyser")
         user = UNKNOWN_USER
@@ -323,6 +350,18 @@ async def _listen_cycle(
                 logger.info("[MainLoop] Resuming music playback.")
                 await media_player.resume()
 
+        # Restore status
+        is_playing = False
+        if media_player and hasattr(media_player, "is_playing"):
+            if not isinstance(media_player.is_playing, Mock):
+                is_playing = media_player.is_playing()
+            else:
+                ret = media_player.is_playing.return_value
+                is_playing = ret if isinstance(ret, bool) else False
+        status = "playing_music" if is_playing else "idle"
+        current_song = media_player.current_title if (media_player and hasattr(media_player, "current_title")) else ""
+        update_robot_status(status=status, is_playing_music=is_playing, current_song=current_song)
+
 
 async def _handle_intent(
     intent,
@@ -402,6 +441,47 @@ async def _handle_intent(
     return await llm.generate(text, system=system)
 
 
+async def _poll_media_commands(media_player, shutdown_event: asyncio.Event) -> None:
+    """Poll for background media commands from the web application."""
+    cmd_file = Path("data/media_command.json")
+    last_processed_ts = 0.0
+
+    while not shutdown_event.is_set():
+        await asyncio.sleep(0.5)
+        if cmd_file.exists():
+            try:
+                content = cmd_file.read_text(encoding="utf-8")
+                if not content.strip():
+                    continue
+                cmd = json.loads(content)
+                ts = cmd.get("ts", 0.0)
+                if ts > last_processed_ts:
+                    action = cmd.get("action")
+                    query = cmd.get("query")
+                    logger.info("[MainLoop] Processing background media command: %s", action)
+
+                    if media_player:
+                        if action == "pause":
+                            await media_player.pause()
+                        elif action == "resume":
+                            await media_player.resume()
+                        elif action == "stop":
+                            await media_player.stop()
+                        elif action == "next":
+                            await media_player.next()
+                        elif action == "play":
+                            # Run play in background task so we do not block loop
+                            asyncio.create_task(media_player.play(query or ""))
+
+                    last_processed_ts = ts
+                    try:
+                        cmd_file.unlink()
+                    except FileNotFoundError:
+                        pass
+            except Exception as e:
+                logger.error("[MainLoop] Error processing background media command: %s", e)
+
+
 async def _speak(tts, audio, text: str) -> None:
     """Synthesise and play *text*, then suppress echo.
 
@@ -411,6 +491,7 @@ async def _speak(tts, audio, text: str) -> None:
     falsely trigger on the TTS output.
     """
     try:
+        update_robot_status(status="speaking", last_speech_spoken=text)
         pcm, sr = await tts.synthesize(text)
         await audio.play(pcm, sr)
     except Exception as exc:

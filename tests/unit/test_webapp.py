@@ -71,7 +71,7 @@ def test_status_endpoint(mock_config, mock_identity_store):
     assert res.status_code == 200
     data = res.json()
     assert data["name"] == "FamilyRobot"
-    assert data["status"] == "running"
+    assert data["status"] == "idle"
     assert data["platform"] == "desktop"
 
 

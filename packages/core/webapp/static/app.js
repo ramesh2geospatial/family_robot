@@ -1,4 +1,4 @@
-/* FamilyRobot Companion PWA — JavaScript */
+/* FamilyRobot Premium PWA Companion — JavaScript */
 
 const API = '';  // Same origin
 
@@ -69,6 +69,54 @@ function updateDeviceState(deviceId, state) {
         } else {
             el.textContent = JSON.stringify(state);
         }
+    }
+}
+
+// ── Media Player Controls ───────────────────────────────────────
+
+async function sendMediaCommand(action) {
+    try {
+        const res = await fetch(API + '/api/media/command', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({action: action}),
+        });
+        if (res.ok) {
+            showToast(`Media: ${action.toUpperCase()}`);
+            pollStatus();  // Immediate status poll
+        } else {
+            const data = await res.json();
+            showToast('Error: ' + (data.detail || 'Unknown'));
+        }
+    } catch (e) {
+        showToast('Connection error');
+    }
+}
+
+async function playMedia() {
+    const queryEl = document.getElementById('mediaQuery');
+    const query = queryEl.value.trim();
+    if (!query) {
+        showToast('Please enter a song name');
+        return;
+    }
+
+    try {
+        const res = await fetch(API + '/api/media/command', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({action: 'play', query: query}),
+        });
+        if (res.ok) {
+            showToast(`Playing: "${query}"`);
+            queryEl.value = '';
+            pollStatus();  // Immediate status poll
+        } else {
+            const data = await res.json();
+            showToast('Error: ' + (data.detail || 'Unknown'));
+        }
+    } catch (e) {
+        showToast('Connection error');
     }
 }
 
@@ -177,17 +225,63 @@ async function pollStatus() {
         const res = await fetch(API + '/api/status');
         if (res.ok) {
             const data = await res.json();
-            document.getElementById('statusText').textContent = data.status;
+            
+            // 1. Connection Header Badge
+            document.getElementById('statusText').textContent = 'Online';
             document.getElementById('statusBadge').classList.add('connected');
+            
+            // 2. Robot Status Panel State
+            const stateText = data.status || 'idle';
+            document.getElementById('robotStateText').textContent = stateText;
+            
+            // 3. Dynamic Glow & Avatar Classes
+            const statusPanel = document.getElementById('robotStatusPanel');
+            const avatar = document.getElementById('robotAvatar');
+            
+            statusPanel.className = 'robot-status-panel'; // Reset classes
+            
+            if (stateText === 'listening') {
+                statusPanel.classList.add('status-panel-listening');
+                avatar.textContent = '👂';
+            } else if (stateText === 'thinking') {
+                statusPanel.classList.add('status-panel-thinking');
+                avatar.textContent = '🧠';
+            } else if (stateText === 'speaking') {
+                statusPanel.classList.add('status-panel-speaking');
+                avatar.textContent = '🗣️';
+            } else if (stateText === 'playing_music') {
+                statusPanel.classList.add('status-panel-music');
+                avatar.textContent = '🎵';
+            } else {
+                avatar.textContent = '🤖';
+            }
+            
+            // 4. Conversation Dialogue Text
+            const heardVal = data.last_speech_heard || '';
+            const spokenVal = data.last_speech_spoken || '';
+            
+            document.getElementById('heardText').textContent = heardVal.trim() ? heardVal : 'Waiting for voice command...';
+            document.getElementById('spokenText').textContent = spokenVal.trim() ? spokenVal : 'Hello! I am ready. Say "Hello Puppy" to wake me up.';
+            
+            // 5. Track Title Info
+            const trackVal = data.current_song || '';
+            document.getElementById('trackTitle').textContent = trackVal.trim() ? trackVal : 'None';
         }
     } catch (e) {
+        // Offline / Connection error fallback
         document.getElementById('statusText').textContent = 'Offline';
         document.getElementById('statusBadge').classList.remove('connected');
+        
+        document.getElementById('robotStateText').textContent = 'Offline';
+        document.getElementById('robotAvatar').textContent = '💤';
+        
+        const statusPanel = document.getElementById('robotStatusPanel');
+        statusPanel.className = 'robot-status-panel';
     }
 }
 
-// Poll every 10s
-setInterval(pollStatus, 10000);
+// Poll every 2 seconds for highly responsive status updates
+setInterval(pollStatus, 2000);
 pollStatus();
 
 // ── PWA Service Worker ──────────────────────────────────────────

@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#1a1a2e">
-    <meta name="description" content="FamilyRobot Companion - Control your smart home assistant">
+    <meta name="theme-color" content="#0d0e15">
+    <meta name="description" content="FamilyRobot Companion - Control and monitor your family assistant">
     <link rel="manifest" href="/manifest.json">
     <title>FamilyRobot Companion</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
@@ -27,7 +28,34 @@
             </div>
         </header>
 
-        <!-- Navigation -->
+        <!-- Dynamic Robot Status Dialogue Panel -->
+        <section class="robot-status-panel" id="robotStatusPanel">
+            <div class="robot-avatar-wrapper">
+                <div class="robot-avatar" id="robotAvatar">🤖</div>
+            </div>
+            <div class="robot-info">
+                <div class="robot-state-line">
+                    <span class="robot-status-label">Assistant Status</span>
+                    <span class="robot-badge" id="robotStateBadge">
+                        <span class="state-indicator-dot"></span>
+                        <span id="robotStateText">Idle</span>
+                    </span>
+                </div>
+                <!-- Dialogue History -->
+                <div class="dialogue-container">
+                    <div class="dialogue-bubble user-bubble" id="heardBubble">
+                        <span class="bubble-label">👤 You Heard:</span>
+                        <p id="heardText">Waiting for voice command...</p>
+                    </div>
+                    <div class="dialogue-bubble robot-bubble" id="spokenBubble">
+                        <span class="bubble-label">🤖 Robot Said:</span>
+                        <p id="spokenText">Hello! I am ready. Say "Hello Puppy" to wake me up.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Navigation Tabs -->
         <nav class="tab-nav">
             <button class="tab-btn active" data-tab="control">🏠 Control</button>
             <button class="tab-btn" data-tab="members">👨‍👩‍👧‍👦 Family</button>
@@ -36,7 +64,7 @@
 
         <!-- Tab: Device Control -->
         <section id="tab-control" class="tab-panel active">
-            <h2>Device Control</h2>
+            <h2>Manual Device Control</h2>
             <div class="device-grid">
                 <div class="device-card" data-device="living_room_light">
                     <div class="device-icon">💡</div>
@@ -75,6 +103,27 @@
                     <input type="range" min="0" max="100" value="50" class="slider"
                            oninput="sendLevel('fan', this.value)">
                     <div class="device-state" id="state-fan">--</div>
+                </div>
+            </div>
+
+            <!-- Media Player Section -->
+            <div class="media-player-card">
+                <div class="media-header">
+                    <span class="media-icon">🎵</span>
+                    <h3>Music & Song Playback</h3>
+                </div>
+                <div class="media-track-info">
+                    <span class="track-label">Now Playing:</span>
+                    <span class="track-title" id="trackTitle">None</span>
+                </div>
+                <div class="media-controls">
+                    <button class="btn btn-media" id="mediaPauseBtn" onclick="sendMediaCommand('pause')">⏯️ Play/Pause</button>
+                    <button class="btn btn-media" id="mediaStopBtn" onclick="sendMediaCommand('stop')">⏹️ Stop</button>
+                </div>
+                <div class="media-search">
+                    <input type="text" id="mediaQuery" placeholder="Search & play song..." class="input"
+                           onkeypress="if(event.key==='Enter')playMedia()">
+                    <button class="btn btn-primary btn-media-play" onclick="playMedia()">Play</button>
                 </div>
             </div>
         </section>

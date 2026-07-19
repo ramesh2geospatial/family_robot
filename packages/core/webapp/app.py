@@ -65,6 +65,15 @@ class StatusResponse(BaseModel):
     status: str
     enrolled_members: int
     active_reminders: int
+    current_song: Optional[str] = None
+    is_playing_music: bool = False
+    last_speech_heard: Optional[str] = None
+    last_speech_spoken: Optional[str] = None
+
+
+class MediaCommand(BaseModel):
+    action: str  # "play", "pause", "resume", "stop", "next"
+    query: Optional[str] = None  # for "play"
 
 
 # ── App state (injected by the orchestrator) ─────────────────────
@@ -190,13 +199,38 @@ if _static_dir.exists():
 async def get_status():
     s = get_state()
     member_count = len(s.identity_store.list_members()) if s.identity_store else 0
+
+    from packages.core.webapp.status_helper import read_robot_status
+    r_status = read_robot_status()
+
     return StatusResponse(
         name=s.config.system.name if s.config else "FamilyRobot",
         platform=s.config.platform if s.config else "unknown",
-        status="running",
+        status=r_status.get("status", "idle"),
         enrolled_members=member_count,
         active_reminders=0,
+        current_song=r_status.get("current_song"),
+        is_playing_music=r_status.get("is_playing_music", False),
+        last_speech_heard=r_status.get("last_speech_heard"),
+        last_speech_spoken=r_status.get("last_speech_spoken"),
     )
+
+
+@app.post("/api/media/command")
+async def media_command(cmd: MediaCommand):
+    """Write the media command to a shared JSON file for the main voice loop to execute."""
+    import time
+    import json
+
+    cmd_file = Path("data/media_command.json")
+    cmd_file.parent.mkdir(parents=True, exist_ok=True)
+    payload = {
+        "action": cmd.action,
+        "query": cmd.query,
+        "ts": time.time()
+    }
+    cmd_file.write_text(json.dumps(payload), encoding="utf-8")
+    return {"status": "queued", "command": payload}
 
 
 # ── Routes: Device Control ──────────────────────────────────────
