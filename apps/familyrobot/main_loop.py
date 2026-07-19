@@ -75,6 +75,8 @@ async def run_loop(
         "llm": llm,
         "memory": memory,
         "identity_store": identity_store,
+        "conversation_logger": conversation_logger,
+        "audit_log": audit_log,
     }
 
     try:

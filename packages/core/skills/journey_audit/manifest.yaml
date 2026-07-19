@@ -1,0 +1,28 @@
+name: journey_audit
+languages: [en, hi, mr]
+intents:
+  - id: journey_audit.check
+    utterances:
+      en:
+        - "what did you hear"
+        - "what did you hear me say"
+        - "why did you deny"
+        - "why was my request denied"
+        - "why was that denied"
+        - "why did you deny that"
+        - "audit recent commands"
+        - "show my recent commands"
+        - "explain last action"
+        - "explain your last action"
+      hi:
+        - "तुमने क्या सुना"
+        - "मेरा अनुरोध क्यों अस्वीकार किया"
+        - "हाल के कमांड दिखाओ"
+      mr:
+        - "तू काय ऐकलेस"
+        - "माझा विनंती का नाकारली"
+        - "नुकतेच कमांड दाखवा"
+    slots: {}
+required_permissions: [general_info]
+hardware_deps: []
+offline_capable: true

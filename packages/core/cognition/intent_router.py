@@ -104,6 +104,25 @@ _COOKING_KEYWORDS = ["recipe", "cook", "convert", "step", "pudhchi", "pudhe"]
 _HOMEWORK_KEYWORDS = ["explain", "solve", "quiz", "question about"]
 _DANCE_KEYWORDS = ["dance", "nacho", "nachne", "डान्स", "नाच"]
 _ENROLL_KEYWORDS = ["enroll", "register", "new user", "add user", "नवीन युझर"]
+_AUDIT_JOURNEY_KEYWORDS = [
+    "what did you hear",
+    "what did you hear me say",
+    "why did you deny",
+    "why was my request denied",
+    "why was that denied",
+    "why did you deny that",
+    "audit recent commands",
+    "show my recent commands",
+    "explain last action",
+    "explain your last action",
+    "तुमने क्या सुना",
+    "मेरा अनुरोध क्यों अस्वीकार किया",
+    "हाल के कमांड दिखाओ",
+    "तू काय ऐकलेस",
+    "माझा विनंती का नाकारली",
+    "नुकतेच कमांड दाखवा",
+]
+
 
 _DEVICE_NAMES = [
     "geyser",
@@ -393,6 +412,10 @@ class IntentRouter:
         for kw in _ENROLL_KEYWORDS:
             if kw in lower:
                 return Intent(name="enroll", confidence=0.9, entities={})
+
+        for kw in _AUDIT_JOURNEY_KEYWORDS:
+            if kw in lower:
+                return Intent(name="audit_journey", confidence=0.9, entities={})
 
         for kw in _HOME_KEYWORDS:
             if kw in lower:

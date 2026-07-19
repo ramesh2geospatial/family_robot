@@ -14,6 +14,7 @@ from packages.core.skills.geyser.skill import GeyserSkill
 from packages.core.skills.homework.skill import HomeworkSkill
 from packages.core.skills.lights.skill import LightsSkill
 from packages.core.skills.memory_admin.skill import MemoryAdminSkill
+from packages.core.skills.journey_audit.skill import JourneyAuditSkill
 from packages.core.skills.music.skill import MusicSkill
 from packages.core.skills.pump.skill import PumpSkill
 from packages.core.skills.registry import SkillRegistry
@@ -43,6 +44,7 @@ __all__ = [
     "MusicSkill",
     "CookingSkill",
     "HomeworkSkill",
+    "JourneyAuditSkill",
     "SkillContext",
     "SkillRegistry",
     "SkillResult",
