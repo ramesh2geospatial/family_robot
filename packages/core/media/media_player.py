@@ -77,6 +77,8 @@ class MediaPlayer:
         self._process: Optional[subprocess.Popen] = None
         self._current_title: str = ""
         self._lock = threading.Lock()
+        self._is_ducked: bool = False
+        self._original_volume: int = 100
 
         if not self._mpv_available:
             logger.warning(
@@ -131,6 +133,11 @@ class MediaPlayer:
 
     async def pause(self) -> bool:
         """Toggle pause on current playback."""
+        # Cancel any active unduck tasks and reset ducked state
+        if hasattr(self, "_unduck_task") and self._unduck_task:
+            self._unduck_task.cancel()
+            self._unduck_task = None
+        self._is_ducked = False
         return self._send_ipc_command({"command": ["cycle", "pause"]})
 
     async def resume(self) -> bool:
@@ -141,6 +148,11 @@ class MediaPlayer:
 
     async def stop(self) -> None:
         """Stop playback and kill mpv process."""
+        if hasattr(self, "_unduck_task") and self._unduck_task:
+            self._unduck_task.cancel()
+            self._unduck_task = None
+        self._is_ducked = False
+
         with self._lock:
             if self._process and self._process.poll() is None:
                 try:
@@ -161,6 +173,50 @@ class MediaPlayer:
         # In a future version, we could maintain a playlist
         await self.stop()
         return ""
+
+    async def set_volume(self, pct: int) -> bool:
+        """Set playback volume (0-100) via IPC."""
+        logger.info("Setting volume to %d%%", pct)
+        return self._send_ipc_command(
+            {"command": ["set_property", "volume", pct]}
+        )
+
+    async def duck(self, pct: int = 50, duration: float = 3.0) -> None:
+        """Temporarily lower the volume (duck) and schedule auto-unduck."""
+        if not self.is_playing():
+            return
+
+        # Cancel any active auto-unduck task
+        if hasattr(self, "_unduck_task") and self._unduck_task:
+            self._unduck_task.cancel()
+            self._unduck_task = None
+
+        if not self._is_ducked:
+            logger.info("Ducking playback volume to %d%%", pct)
+            self._is_ducked = True
+            await self.set_volume(pct)
+
+        # Spawn self-unducking background task
+        import asyncio
+        self._unduck_task = asyncio.create_task(self._auto_unduck_delay(duration))
+
+    async def _auto_unduck_delay(self, duration: float) -> None:
+        import asyncio
+        try:
+            await asyncio.sleep(duration)
+            await self.unduck()
+        except asyncio.CancelledError:
+            pass
+
+    async def unduck(self) -> None:
+        """Restore the volume to original level."""
+        if not self.is_playing() or not self._is_ducked:
+            return
+        logger.info("Restoring playback volume to %d%%", self._original_volume)
+        self._is_ducked = False
+        await self.set_volume(self._original_volume)
+
+
 
     # ------------------------------------------------------------------
     # Private helpers

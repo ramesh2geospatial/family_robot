@@ -218,6 +218,14 @@ async def _listen_cycle(
     update_robot_status(status=status, is_playing_music=is_playing, current_song=current_song)
 
     frame = await audio.read_frame()
+
+    # VAD-triggered ducking to improve acoustic barge-in while music is playing
+    if is_playing and media_player and hasattr(media_player, "duck"):
+        prob = vad.get_speech_probability(frame)
+        if isinstance(prob, (int, float)) and not isinstance(prob, bool):
+            if prob > 0.35:
+                asyncio.create_task(media_player.duck(pct=50, duration=3.0))
+
     score = await asyncio.to_thread(wakeword.predict, frame)
     if score < _WAKE_THRESHOLD:
         return  # keep polling
@@ -288,7 +296,7 @@ async def _listen_cycle(
             text, lang = await asyncio.to_thread(stt.transcribe, all_audio)
         except Exception as exc:
             logger.error("STT failed: %s", exc)
-            await _speak(tts, audio, _FALLBACK_MSG)
+            await _speak(tts, audio, _FALLBACK_MSG, media_player=media_player)
             if conversation_logger:
                 processing_time = time.perf_counter() - start_time
                 conversation_logger.log_interaction(
@@ -319,7 +327,7 @@ async def _listen_cycle(
 
         # Speak acknowledgment phrase so user knows we heard them
         ack = _ACK_PHRASES.get(lang, _ACK_PHRASES["en"])
-        asyncio.create_task(_speak_ack(tts, audio, ack))
+        asyncio.create_task(_speak_ack(tts, audio, ack, media_player=media_player))
 
         # Identify user (support prefix override, e.g. "Ramesh: turn on geyser")
         user = UNKNOWN_USER
@@ -395,7 +403,7 @@ async def _listen_cycle(
                         logger.warning("Translation of response failed: %s", exc)
 
         logger.info("Robot response: %s", response)
-        await _speak(tts, audio, response)
+        await _speak(tts, audio, response, media_player=media_player)
 
         # Trigger background memory extraction
         if intent and intent.name not in ("memory_store", "memory_recall", "audit_journey"):
@@ -424,7 +432,7 @@ async def _listen_cycle(
     except Exception as exc:
         logger.error("Processing failed: %s", exc, exc_info=True)
         response = _FALLBACK_MSG
-        await _speak(tts, audio, response)
+        await _speak(tts, audio, response, media_player=media_player)
     finally:
         # Acoustic Barge-in: Resume music if we paused it and the intent was NOT play_music
         if paused_for_voice and media_player:
@@ -582,19 +590,29 @@ async def _proactive_loop(engine, ports, tts, audio, shutdown_event) -> None:
             )
             if suggestion:
                 logger.info("Proactive suggestion: %s", suggestion)
-                await _speak(tts, audio, suggestion)
+                await _speak(tts, audio, suggestion, media_player=ports.get("media_player"))
         except asyncio.CancelledError:
             break
         except Exception as exc:
             logger.debug("Proactive check error (non-critical): %s", exc)
 
 
-async def _speak_ack(tts, audio, text: str) -> None:
+async def _speak_ack(tts, audio, text: str, media_player=None) -> None:
     """Speak a short acknowledgment phrase without echo suppression.
 
     This is fire-and-forget — it runs concurrently with intent classification
     so the user hears feedback while the LLM is thinking.
     """
+    is_playing = False
+    if media_player and hasattr(media_player, "is_playing"):
+        if not isinstance(media_player.is_playing, Mock):
+            is_playing = media_player.is_playing()
+        else:
+            is_playing = media_player.is_playing.return_value if isinstance(media_player.is_playing.return_value, bool) else False
+
+    if is_playing and media_player and hasattr(media_player, "duck"):
+        await media_player.duck(pct=50, duration=5.0)
+
     try:
         pcm, sr = await tts.synthesize(text)
         await audio.play(pcm, sr)
@@ -602,7 +620,7 @@ async def _speak_ack(tts, audio, text: str) -> None:
         logger.debug("Ack TTS failed (non-critical): %s", exc)
 
 
-async def _speak(tts, audio, text: str) -> None:
+async def _speak(tts, audio, text: str, media_player=None) -> None:
     """Synthesise and play *text*, then suppress echo.
 
     After playback finishes we wait briefly for any acoustic echo
@@ -610,6 +628,16 @@ async def _speak(tts, audio, text: str) -> None:
     then flush all accumulated audio so the wake-word detector does not
     falsely trigger on the TTS output.
     """
+    is_playing = False
+    if media_player and hasattr(media_player, "is_playing"):
+        if not isinstance(media_player.is_playing, Mock):
+            is_playing = media_player.is_playing()
+        else:
+            is_playing = media_player.is_playing.return_value if isinstance(media_player.is_playing.return_value, bool) else False
+
+    if is_playing and media_player and hasattr(media_player, "duck"):
+        await media_player.duck(pct=50, duration=10.0)
+
     try:
         update_robot_status(status="speaking", last_speech_spoken=text)
         pcm, sr = await tts.synthesize(text)
@@ -617,6 +645,8 @@ async def _speak(tts, audio, text: str) -> None:
     except Exception as exc:
         logger.error("TTS/play failed: %s", exc)
     finally:
+        if is_playing and media_player and hasattr(media_player, "unduck"):
+            await media_player.unduck()
         # Post-speech echo suppression: let echo dissipate, then discard
         await asyncio.sleep(1.0)
         try:

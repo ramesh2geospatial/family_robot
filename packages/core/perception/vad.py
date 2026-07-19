@@ -73,3 +73,25 @@ class VoiceActivityDetector:
                 event = res
 
         return event
+
+    def get_speech_probability(self, audio_chunk: bytes) -> float:
+        """Compute the raw speech probability for the chunk (no state change)."""
+        if not audio_chunk or len(audio_chunk) < 2:
+            return 0.0
+        try:
+            import torch
+
+            # Convert to float32 normalized array
+            audio_np = np.frombuffer(audio_chunk, dtype=np.int16).astype(np.float32) / 32768.0
+            inputs = torch.from_numpy(audio_np)
+            
+            with torch.no_grad():
+                prob = self.model(inputs, self.sampling_rate)
+                # Handle potential PyTorch Tensor return
+                if hasattr(prob, "item"):
+                    return float(prob.item())
+                return float(prob)
+        except Exception as exc:
+            logger.debug("VAD probability check failed: %s", exc)
+            return 0.0
+

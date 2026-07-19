@@ -41,5 +41,5 @@ class TermuxHomeAdapter(HomePort):
     async def get_state(self, device_id: str) -> Dict[str, Any]:
         """Get the current state dictionary of a device."""
         state = self.states.get(device_id, {})
-        logger.info("TermuxHomeAdapter: get_state for %s -> %s", device_id, state)
+        logger.debug("TermuxHomeAdapter: get_state for %s -> %s", device_id, state)
         return state

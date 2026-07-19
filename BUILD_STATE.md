@@ -4,12 +4,12 @@ The autonomous builder (see [BUILD_PROMPT.md](BUILD_PROMPT.md)) updates this fil
 Resume rule: read this file first, find the first 'in_progress'/'pending' step, continue.
 
 ## CURRENT
-- **Stage**: Phase 2/3 Complete + Intelligence Upgrade
-- **Active step**: 22
+- **Stage**: Phase 2/3 Complete + Volume Ducking
+- **Active step**: 23
 - **Status**: done
-- **Next action**: none (intelligence upgrades complete)
+- **Next action**: none (all upgrades complete)
 - **Repo green**: yes
-- **Last commit**: 329eeee
+- **Last commit**: 943156c
 
 ## STEP TRACKER
 | # | Stage | Step | Status | Tests | Commit |
@@ -36,7 +36,8 @@ Resume rule: read this file first, find the first 'in_progress'/'pending' step, 
 | 19 | UX | Music playback: yt-dlp + mpv + song extraction | done | 15 new/updated tests passed (228 total) | 6cf9c2e |
 | 20 | UX | Multilingual conversation consistency & barge-in | done | 3 new unit tests passed (231 total) | 8ae7234 |
 | 21 | UX | Unified database persistence context | done | 231 unit/contract tests passed | baeeadb |
-| 22 | Cognition | Real Intelligence Upgrade: LLM tool-use, context engine, proactive engine, persona | done | 16 new unit tests passed (264 total) | 329eeee |
+| 22 | Cognition | Real Intelligence Upgrade: LLM tool-use, context engine, proactive engine, persona | done | 16 new unit tests passed (264 total) | 6a690f5 |
+| 23 | UX | VAD & TTS volume ducking to improve acoustic barge-in | done | 5 new unit tests passed (269 total) | 943156c |
 
 ## DEFINITION-OF-DONE MATRIX (SPEC §2X.8)
 | Capability | Desktop | Android | Pi |
@@ -75,4 +76,6 @@ Resume rule: read this file first, find the first 'in_progress'/'pending' step, 
 - 2026-06-27 session: completed Step 20; implemented multilingual conversation consistency (detecting user spoken language, adjusting LLM system prompt dynamically, and translating English skill responses to Hindi/Marathi on the fly) and acoustic barge-in playback control (automatically pausing music on wake word detection, then resuming it after answering non-music queries); added 3 new unit tests; all 231 tests passed cleanly.
 - 2026-07-07 session: completed Step 21; implemented a unified database persistence context (PersistenceContext) backing MemoryStore, IdentityStore, AuditLog, and AssistantSkill conversation history; all 231 tests pass.
 - 2026-07-19 session: completed Step 22 (Real Intelligence Upgrade); implemented ContextBuilder (token-budgeted prompt assembler), LLM structured intent routing with JSON entity extraction, ProactiveEngine for morning/bedtime/device warnings, ToolRegistry/ToolExecutor for local LLM function calling/tool-use, role-based Personas and festival greetings calendar, immediate voice acknowledgment phrase ("Let me think...") to eliminate latency gap, and optimized translation layer with fast 0ms dictionary lookup; added 16 new unit tests; all 264 unit and contract tests passed green.
+- 2026-07-19 session: completed Step 23 (Volume Ducking); implemented VAD-triggered music volume ducking (50% for 3 seconds) using stateless VoiceActivityDetector.get_speech_probability() and self-unducking delay timers inside MediaPlayer; integrated automatic music ducking when the robot speaks TTS or proactive announcements; lowered mock home adapter get_state logging to DEBUG level to avoid polling noise in terminal; added 5 new unit tests; all 269 unit and contract tests passed green.
+
 
