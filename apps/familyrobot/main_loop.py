@@ -16,14 +16,58 @@ from packages.core.expression.response_formatter import format_response
 from packages.core.governance import ACL, UNKNOWN_USER, AuditLog, IdentityStore
 from packages.core.webapp.status_helper import update_robot_status
 from packages.core.cognition.memory_extractor import extract_and_store_memories
+from packages.core.cognition.proactive_engine import ProactiveEngine
+from packages.core.cognition.tool_executor import ToolExecutor
+from packages.core.cognition.tool_registry import build_default_tools
 
 import re
 from unittest.mock import Mock
 
 logger = logging.getLogger(__name__)
 
+# Dictionary for fast 0ms translation of common home control responses.
+# Falls back to LLM translation if not found in this dictionary.
+_LOCALIZED_PHRASES = {
+    "hi": {
+        "turned on the light.": "लाइट चालू कर दी है।",
+        "turned off the light.": "लाइट बंद कर दी है।",
+        "turned on the geyser.": "गीजर चालू कर दिया है।",
+        "turned off the geyser.": "गीजर बंद कर दिया है।",
+        "turned on the pump.": "पंप चालू कर दिया है।",
+        "turned off the pump.": "पंप बंद कर दिया है।",
+        "turned on the fan.": "पंखा चालू कर दिया है।",
+        "turned off the fan.": "पंखा बंद कर दिया है।",
+        "turned on the washer.": "वॉशर चालू कर दिया है।",
+        "turned off the washer.": "वॉशर बंद कर दिया है।",
+        "turned on the tv.": "टीवी चालू कर दिया है।",
+        "turned off the tv.": "टीवी बंद कर दिया है।",
+    },
+    "mr": {
+        "turned on the light.": "लाईट चालू केली आहे.",
+        "turned off the light.": "लाईट बंद केली आहे.",
+        "turned on the geyser.": "गीझर चालू केला आहे.",
+        "turned off the geyser.": "गीझर बंद केला आहे.",
+        "turned on the pump.": "पंप चालू केला आहे.",
+        "turned off the pump.": "पंप बंद केला आहे.",
+        "turned on the fan.": "पंखा चालू केला आहे.",
+        "turned off the fan.": "पंखा बंद केला आहे.",
+        "turned on the washer.": "वॉशर चालू केला आहे.",
+        "turned off the washer.": "वॉशर बंद केला आहे.",
+        "turned on the tv.": "टीव्ही चालू केला आहे.",
+        "turned off the tv.": "टीव्ही बंद केला आहे.",
+    }
+}
+
 _WAKE_THRESHOLD = 0.5
 _FALLBACK_MSG = "Sorry, I didn't catch that. Could you try again?"
+
+# Acknowledgment phrases spoken immediately after STT, before LLM inference.
+# Keeps the user informed that the robot heard them (eliminates 5-20s silence).
+_ACK_PHRASES = {
+    "en": "Let me think…",
+    "hi": "सोचने दो…",
+    "mr": "विचार करतो…",
+}
 
 
 async def run_loop(
@@ -83,8 +127,20 @@ async def run_loop(
         "audit_log": audit_log,
     }
 
+    # Build tool-use infrastructure for LLM function calling
+    tool_registry = build_default_tools(ports)
+    tool_executor = ToolExecutor(registry=tool_registry, acl=acl, llm=llm)
+    ports["tool_registry"] = tool_registry
+    ports["tool_executor"] = tool_executor
+
+    # Proactive engine for time/state-based suggestions
+    proactive_engine = ProactiveEngine()
+
     media_command_task = asyncio.create_task(
         _poll_media_commands(ports.get("media_player"), shutdown_event)
+    )
+    proactive_task = asyncio.create_task(
+        _proactive_loop(proactive_engine, ports, tts, audio, shutdown_event)
     )
 
     try:
@@ -111,8 +167,13 @@ async def run_loop(
         logger.info("Loop cancelled.")
     finally:
         media_command_task.cancel()
+        proactive_task.cancel()
         try:
             await media_command_task
+        except asyncio.CancelledError:
+            pass
+        try:
+            await proactive_task
         except asyncio.CancelledError:
             pass
         await audio.close()
@@ -256,6 +317,10 @@ async def _listen_cycle(
         logger.info("Transcribed: '%s' [%s]", text, lang)
         update_robot_status(status="thinking", last_speech_heard=text)
 
+        # Speak acknowledgment phrase so user knows we heard them
+        ack = _ACK_PHRASES.get(lang, _ACK_PHRASES["en"])
+        asyncio.create_task(_speak_ack(tts, audio, ack))
+
         # Identify user (support prefix override, e.g. "Ramesh: turn on geyser")
         user = UNKNOWN_USER
         clean_text = text
@@ -303,9 +368,16 @@ async def _listen_cycle(
             )
             response = format_response(raw_response, intent.name)
 
-            # Dynamic Localisation Layer: Translate English skill responses if user spoke Hindi/Marathi
+            # Localisation: Translate English responses for Hindi/Marathi users
             if lang in ("hi", "mr") and response:
-                if not bool(re.search(r"[\u0900-\u097F]", response)):
+                # Fast path: check dictionary first (0ms latency)
+                lower_resp = response.strip().lower()
+                localized = _LOCALIZED_PHRASES.get(lang, {}).get(lower_resp)
+                if localized:
+                    logger.info("Localized response via dictionary: '%s' -> '%s'", response, localized)
+                    response = localized
+                # Fallback path: call LLM if no Devanagari character exists in response
+                elif not bool(re.search(r"[\u0900-\u097F]", response)):
                     target_lang = "Hindi" if lang == "hi" else "Marathi"
                     try:
                         logger.info("Translating response to %s: '%s'", target_lang, response)
@@ -493,6 +565,41 @@ async def _poll_media_commands(media_player, shutdown_event: asyncio.Event) -> N
                         pass
             except Exception as e:
                 logger.error("[MainLoop] Error processing background media command: %s", e)
+
+
+async def _proactive_loop(engine, ports, tts, audio, shutdown_event) -> None:
+    """Background task that periodically checks for proactive suggestions."""
+    while not shutdown_event.is_set():
+        try:
+            await asyncio.sleep(60)  # Check every 60 seconds
+            if shutdown_event.is_set():
+                break
+
+            suggestion = await engine.check(
+                memory_port=ports.get("memory"),
+                home_port=ports.get("home"),
+                active_state=None,  # TODO: wire robot_status
+            )
+            if suggestion:
+                logger.info("Proactive suggestion: %s", suggestion)
+                await _speak(tts, audio, suggestion)
+        except asyncio.CancelledError:
+            break
+        except Exception as exc:
+            logger.debug("Proactive check error (non-critical): %s", exc)
+
+
+async def _speak_ack(tts, audio, text: str) -> None:
+    """Speak a short acknowledgment phrase without echo suppression.
+
+    This is fire-and-forget — it runs concurrently with intent classification
+    so the user hears feedback while the LLM is thinking.
+    """
+    try:
+        pcm, sr = await tts.synthesize(text)
+        await audio.play(pcm, sr)
+    except Exception as exc:
+        logger.debug("Ack TTS failed (non-critical): %s", exc)
 
 
 async def _speak(tts, audio, text: str) -> None:

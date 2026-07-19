@@ -200,4 +200,4 @@ async def test_multilingual_translation_layer() -> None:
     assert "Turned on the light" in prompt_arg
 
     # Verify TTS spoke the translated Hindi response, not the English one
-    mock_tts.synthesize.assert_called_once_with("लाइट चालू कर दी है।")
+    mock_tts.synthesize.assert_any_call("लाइट चालू कर दी है।")

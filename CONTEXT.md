@@ -20,3 +20,14 @@ This glossary contains the canonical terminology and domain concepts used throug
 *   **Interaction Audit / Voice Audit**: The diagnostic query checking logs to explain to a family member what speech was heard, why a command succeeded/failed, or why an action was denied.
 *   **Auto-Memory Extraction**: The background process of automatically extracting declarative facts from conversation turns using the local LLM.
 *   **Memory Deduplication**: The process of checking semantic similarity before storing a new memory to prevent duplicate records and database bloat.
+
+### Intelligence & Context Vocabulary
+
+*   **Context Builder**: The unified prompt assembler that constructs token-budgeted system prompts with identity, time awareness, RAG memories, personality, and active state sections.
+*   **Tool-Use / Function Calling**: The ability of the LLM to invoke registered tools (control devices, play music, set timers) by emitting structured JSON instead of plain text during general chat.
+*   **Tool Registry**: The catalog of callable tools with name, description, parameter schema, and async handler function, available to the LLM.
+*   **Tool Executor**: The component that parses tool-call JSON from LLM output, validates parameters, enforces ACL, and executes the tool handler.
+*   **Proactive Engine**: The background intelligence engine that periodically evaluates time, state, and memory patterns to generate unsolicited suggestions (morning greetings, device warnings, bedtime reminders).
+*   **Personality Profile**: Role-appropriate behavioral instructions (child-friendly, elder-respectful, guest-welcoming) injected into the LLM system prompt.
+*   **Acknowledgment Phrase**: A short spoken phrase ("Let me think…") played immediately after STT completes, before LLM inference, to eliminate the silence gap.
+*   **Structured Intent Classification**: The LLM fallback intent classification that returns JSON with both intent name and extracted entities, replacing the old name-only classification.

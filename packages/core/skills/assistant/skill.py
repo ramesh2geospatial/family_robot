@@ -14,28 +14,18 @@ import logging
 import time
 from collections import OrderedDict
 
+from packages.core.cognition.context_builder import ContextBuilder
+from packages.core.cognition.tool_executor import ToolExecutor
+from packages.core.cognition.tool_registry import ToolRegistry
 from packages.core.skills.base import BaseSkill, SkillContext, SkillResult
 
 logger = logging.getLogger(__name__)
 
-_SYSTEM_PROMPT = (
-    "You are FamilyRobot, a helpful family assistant for an 8-member Indian "
-    "household. Keep answers concise, warm, and family-friendly."
-)
-
-# Explicit language constraints the local LLM (3B params) actually follows
-_LANG_INSTRUCTIONS = {
-    "hi": " Respond ONLY in Hindi (Devanagari script). Do NOT use English.",
-    "mr": " Respond ONLY in Marathi (Devanagari script). Do NOT use English.",
-}
-
 # ── Tuning constants ──
 _MAX_HISTORY_TURNS: int = 5  # turns (user+assistant pairs) retained
-_MAX_HISTORY_CHARS: int = 1200  # char budget for history block (~400 tokens)
+_MAX_HISTORY_CHARS: int = 1800  # char budget for history block (increased for 4096 ctx)
 _MAX_USERS: int = 16  # LRU cap on concurrent user histories
 _SESSION_TIMEOUT_S: float = 300.0  # 5 min silence → reset conversation
-_RAG_MIN_SCORE: float = 0.5  # minimum cosine similarity for RAG hits
-_RAG_MAX_HITS: int = 3  # max memories to retrieve
 
 
 class _ConversationTurn:
@@ -64,6 +54,9 @@ class AssistantSkill(BaseSkill):
         self._max_users = max_users
         self._session_timeout_s = session_timeout_s
         self._max_history_chars = max_history_chars
+        self._context_builder = ContextBuilder(
+            max_history_chars=max_history_chars,
+        )
 
     @property
     def name(self) -> str:
@@ -83,23 +76,30 @@ class AssistantSkill(BaseSkill):
                 success=False,
             )
 
-        # 1. Long-Term Memory (RAG) Lookup
-        #    SEC: guests must NOT receive RAG injection (AGENTS.md rule)
-        long_term_context = ""
+        # 1. Build unified system prompt (identity, time, RAG, language)
         is_guest = (ctx.user_role or "").lower() == "guest"
-        if not is_guest:
-            long_term_context = await self._rag_lookup(ctx)
-
-        # Build explicit language instruction from detected spoken language
-        lang_code = getattr(ctx, "language", "en") or "en"
-        lang_instruction = _LANG_INSTRUCTIONS.get(
-            lang_code, " Respond ONLY in English."
-        )
-        system_prompt = _SYSTEM_PROMPT + lang_instruction + long_term_context
-
-        # 2. Short-Term Conversation History
-        user_id = ctx.user_id or "unknown"
         memory_port = ctx.ports.get("memory")
+
+        # Gather active state from ports if available
+        active_state = ctx.ports.get("active_state") or {}
+
+        system_prompt = await self._context_builder.build_system_prompt(
+            user_name=ctx.user_name or "Someone",
+            user_role=ctx.user_role or "unknown",
+            language=getattr(ctx, "language", "en") or "en",
+            memory_port=memory_port if not is_guest else None,
+            query=ctx.raw_text,
+            is_guest=is_guest,
+            active_state=active_state,
+        )
+
+        # Inject tool definitions into system prompt (non-guests only)
+        tool_registry = ctx.ports.get("tool_registry")
+        if tool_registry and isinstance(tool_registry, ToolRegistry) and not is_guest:
+            system_prompt += tool_registry.get_tool_prompt_block()
+
+        # 2. Short-Term Conversation History (unchanged logic)
+        user_id = ctx.user_id or "unknown"
         db = getattr(memory_port, "persistence", None) if memory_port else None
         from packages.core.memory.persistence import PersistenceContext
 
@@ -107,24 +107,38 @@ class AssistantSkill(BaseSkill):
             db = None
 
         if db:
-            # Persistent database flow
             history = self._db_get_history(db, user_id)
             if history and self._is_db_session_expired(history):
                 self._db_clear_history(db, user_id)
                 history = []
         else:
-            # In-memory fallback
             history = self._get_or_create_history(user_id)
             if history and self._is_session_expired(history):
                 history.clear()
 
-        prompt_str = self._build_prompt(history, ctx.raw_text)
+        prompt_str = self._context_builder.build_history_prompt(
+            history, ctx.raw_text
+        )
 
         try:
             response = await llm.generate(
                 prompt_str,
                 system=system_prompt,
             )
+
+            # Check if the LLM wants to call a tool
+            tool_executor = ctx.ports.get("tool_executor")
+            if (
+                tool_executor
+                and isinstance(tool_executor, ToolExecutor)
+                and tool_executor.is_tool_call(response)
+            ):
+                response = await tool_executor.execute(
+                    response,
+                    user_role=ctx.user_role or "unknown",
+                    user_id=user_id,
+                    language=getattr(ctx, "language", "en") or "en",
+                )
 
             # Persist this exchange
             if db:
@@ -218,29 +232,6 @@ class AssistantSkill(BaseSkill):
         elapsed = time.time() - history[-1].timestamp
         return elapsed > self._session_timeout_s
 
-    # ── RAG helpers ──
-
-    async def _rag_lookup(self, ctx: SkillContext) -> str:
-        """Query MemoryStore and return formatted context string."""
-        memory = ctx.ports.get("memory")
-        if memory is None:
-            return ""
-        try:
-            hits = await memory.search(ctx.raw_text, k=_RAG_MAX_HITS)
-            # BUG-A1 fix: MemoryStore returns "score", not "similarity"
-            valid_facts = [
-                h["text"] for h in hits if h.get("score", 0.0) >= _RAG_MIN_SCORE
-            ]
-            if valid_facts:
-                facts_block = "\n".join(f"- {f}" for f in valid_facts)
-                return (
-                    "\n\nRelevant context from past "
-                    "conversations/memories:\n" + facts_block
-                )
-        except Exception as exc:
-            logger.warning("MemoryStore search failed: %s", exc)
-        return ""
-
     # ── History helpers ──
 
     def _get_or_create_history(self, user_id: str) -> list[_ConversationTurn]:
@@ -263,26 +254,3 @@ class AssistantSkill(BaseSkill):
             return False
         elapsed = time.monotonic() - history[-1].timestamp
         return elapsed > self._session_timeout_s
-
-    def _build_prompt(
-        self,
-        history: list[_ConversationTurn],
-        current_text: str,
-    ) -> str:
-        """Format history + current query, respecting the char budget."""
-        parts: list[str] = []
-        budget = self._max_history_chars
-
-        # Walk from newest to oldest, collecting what fits
-        selected: list[str] = []
-        for turn in reversed(history):
-            line = f"{turn.role.upper()}: {turn.content}"
-            if budget - len(line) < 0:
-                break
-            selected.append(line)
-            budget -= len(line)
-
-        # Reverse back to chronological order
-        parts.extend(reversed(selected))
-        parts.append(f"USER: {current_text}")
-        return "\n".join(parts)

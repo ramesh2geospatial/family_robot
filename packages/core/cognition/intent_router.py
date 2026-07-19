@@ -498,19 +498,21 @@ class IntentRouter:
         return Intent(name="general_chat", confidence=0.5, entities={})
 
     async def _llm_classify(self, text: str) -> Intent:
-        """Use LLM to classify when rules don't match."""
-        system = (
-            "You are an intent classifier. Classify the user message into exactly "
-            "one of: home_control, control_ac, control_tv, control_geyser, "
-            "control_pump, control_washer, control_fan, play_music, cooking, "
-            "homework, dance, enroll, memory_store, memory_recall, timer, "
-            "reminder, calls, security, sensors, general_chat. "
-            "Respond with ONLY the intent name, nothing else."
+        """Use LLM with structured output to classify when rules don't match.
+
+        Returns both intent name AND extracted entities as JSON, unlike the
+        old approach which only returned an intent name with empty entities.
+        """
+        import json
+
+        from packages.core.cognition.intent_prompts import (
+            INTENT_CLASSIFICATION_SYSTEM,
         )
+
         result = await self._llm.generate(  # type: ignore[union-attr]
-            text, system=system, max_tokens=20, temperature=0.1
+            text, system=INTENT_CLASSIFICATION_SYSTEM, max_tokens=100, temperature=0.1
         )
-        intent_name = result.strip().lower().replace(" ", "_")
+
         valid = {
             "home_control",
             "control_ac",
@@ -532,7 +534,39 @@ class IntentRouter:
             "security",
             "sensors",
             "general_chat",
+            "audit_journey",
         }
-        if intent_name not in valid:
-            intent_name = "general_chat"
-        return Intent(name=intent_name, confidence=0.7, entities={})
+
+        # Try to parse structured JSON response
+        try:
+            # Strip markdown fences if the LLM wraps output
+            cleaned = result.strip()
+            if cleaned.startswith("```"):
+                cleaned = cleaned.split("\n", 1)[-1].rsplit("```", 1)[0].strip()
+
+            parsed = json.loads(cleaned)
+            intent_name = parsed.get("intent", "general_chat").strip().lower().replace(" ", "_")
+            entities = parsed.get("entities", {})
+
+            if intent_name not in valid:
+                intent_name = "general_chat"
+                entities = {}
+
+            # Ensure entities is a dict
+            if not isinstance(entities, dict):
+                entities = {}
+
+            logger.debug(
+                "LLM structured classify: %s entities=%s", intent_name, entities
+            )
+            return Intent(name=intent_name, confidence=0.75, entities=entities)
+
+        except (json.JSONDecodeError, AttributeError, TypeError):
+            # Fallback: try to extract just the intent name from raw text
+            intent_name = result.strip().lower().replace(" ", "_")
+            if intent_name in valid:
+                return Intent(name=intent_name, confidence=0.6, entities={})
+
+            logger.warning("LLM intent parse failed, raw: %s", result[:100])
+            return Intent(name="general_chat", confidence=0.4, entities={})
+
