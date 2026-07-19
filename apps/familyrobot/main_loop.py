@@ -15,6 +15,7 @@ from pathlib import Path
 from packages.core.expression.response_formatter import format_response
 from packages.core.governance import ACL, UNKNOWN_USER, AuditLog, IdentityStore
 from packages.core.webapp.status_helper import update_robot_status
+from packages.core.cognition.memory_extractor import extract_and_store_memories
 
 import re
 from unittest.mock import Mock
@@ -323,6 +324,18 @@ async def _listen_cycle(
 
         logger.info("Robot response: %s", response)
         await _speak(tts, audio, response)
+
+        # Trigger background memory extraction
+        if intent and intent.name not in ("memory_store", "memory_recall", "audit_journey"):
+            asyncio.create_task(
+                extract_and_store_memories(
+                    llm=llm,
+                    memory_store=memory,
+                    user=user,
+                    user_text=clean_text,
+                    robot_response=response,
+                )
+            )
 
         if conversation_logger:
             processing_time = time.perf_counter() - start_time

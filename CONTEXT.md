@@ -18,3 +18,5 @@ This glossary contains the canonical terminology and domain concepts used throug
 *   **Audit Log**: The secure, append-only ledger recording security-sensitive operations, ACL checks, and executed device commands.
 *   **Conversation Log**: The diagnostic record capturing voice query transcribing inputs, matched intents, processing times, and spoken response texts.
 *   **Interaction Audit / Voice Audit**: The diagnostic query checking logs to explain to a family member what speech was heard, why a command succeeded/failed, or why an action was denied.
+*   **Auto-Memory Extraction**: The background process of automatically extracting declarative facts from conversation turns using the local LLM.
+*   **Memory Deduplication**: The process of checking semantic similarity before storing a new memory to prevent duplicate records and database bloat.
