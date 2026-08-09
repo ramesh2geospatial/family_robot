@@ -32,6 +32,7 @@ from packages.core.media import MediaPlayer
 from packages.core.perception import (
     SpeechToText,
     VoiceActivityDetector,
+    VoiceprintEncoder,
     WakeWordDetector,
 )
 
@@ -58,6 +59,7 @@ def _build_components(config: AppConfig) -> dict:
     wakeword = WakeWordDetector(wake_word=config.system.wake_word)
     vad = VoiceActivityDetector()
     stt = SpeechToText()
+    voiceprint_encoder = VoiceprintEncoder()
 
     # Unified Persistence Context
     persistence = PersistenceContext(db_path=config.memory_db_path)
@@ -169,6 +171,7 @@ def _build_components(config: AppConfig) -> dict:
         "wakeword": wakeword,
         "vad": vad,
         "stt": stt,
+        "voiceprint_encoder": voiceprint_encoder,
         "llm": llm,
         "memory": memory,
         "intent_router": intent_router,

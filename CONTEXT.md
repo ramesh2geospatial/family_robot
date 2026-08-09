@@ -31,3 +31,10 @@ This glossary contains the canonical terminology and domain concepts used throug
 *   **Personality Profile**: Role-appropriate behavioral instructions (child-friendly, elder-respectful, guest-welcoming) injected into the LLM system prompt.
 *   **Acknowledgment Phrase**: A short spoken phrase ("Let me think…") played immediately after STT completes, before LLM inference, to eliminate the silence gap.
 *   **Structured Intent Classification**: The LLM fallback intent classification that returns JSON with both intent name and extracted entities, replacing the old name-only classification.
+
+### Voiceprint & Speaker Identity Vocabulary
+
+*   **Speaker Voiceprint**: A 192-dimensional numerical vector representation extracted from spoken audio, uniquely capturing the vocal tract acoustics of an enrolled Family Member.
+*   **Voiceprint Encoder**: The perception component that extracts normalized speaker embeddings from audio chunks using an ONNX-quantized ECAPA-TDNN model.
+*   **Tiered Identity Resolution**: The multi-level speaker identification mechanism checking explicit text prefix overrides, voiceprint cosine similarity matching (> 0.70 threshold), and failing closed to UNKNOWN_USER (Guest role).
+

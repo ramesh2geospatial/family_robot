@@ -120,6 +120,7 @@ async def run_loop(
         "notify": components.get("notify"),
         "telephony": components.get("telephony"),
         "media_player": components.get("media_player"),
+        "voiceprint_encoder": components.get("voiceprint_encoder"),
         "llm": llm,
         "memory": memory,
         "identity_store": identity_store,
@@ -248,6 +249,12 @@ async def _listen_cycle(
             logger.info("[MainLoop] Pausing music for voice interaction.")
             await media_player.pause()
             paused_for_voice = True
+            # Let trailing echo dissipate, then discard old buffered frames to prevent VAD/STT poisoning
+            await asyncio.sleep(0.3)
+            try:
+                await audio.flush()
+            except Exception as e:
+                logger.debug("Failed to flush audio buffer: %s", e)
 
     intent = None
     lang = "en"
@@ -329,7 +336,10 @@ async def _listen_cycle(
         ack = _ACK_PHRASES.get(lang, _ACK_PHRASES["en"])
         asyncio.create_task(_speak_ack(tts, audio, ack, media_player=media_player))
 
-        # Identify user (support prefix override, e.g. "Ramesh: turn on geyser")
+        # Tiered Identity Resolution:
+        # 1. Text prefix override (e.g., "Ramesh: turn on geyser")
+        # 2. Voiceprint embedding extraction & similarity matching (> 0.70)
+        # 3. Fallback to UNKNOWN_USER (Guest role)
         user = UNKNOWN_USER
         clean_text = text
         if ":" in text:
@@ -340,6 +350,18 @@ async def _listen_cycle(
                     user = member
                     clean_text = parts[1].strip()
                     break
+
+        if user == UNKNOWN_USER and ports.get("voiceprint_encoder") and all_audio:
+            try:
+                v_encoder = ports["voiceprint_encoder"]
+                voice_emb = v_encoder.encode(all_audio)
+                if any(x != 0.0 for x in voice_emb):
+                    matched = identity_store.identify(voice_embedding=voice_emb)
+                    if matched and matched.user_id != UNKNOWN_USER.user_id:
+                        user = matched
+                        logger.info("Recognized speaker voiceprint: %s (%s)", user.name, user.user_id)
+            except Exception as exc:
+                logger.debug("Voiceprint identity check error: %s", exc)
 
         # 4-7. Intent → action → format → speak
         intent = await intent_router.classify(clean_text)
